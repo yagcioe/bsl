@@ -402,7 +402,6 @@ def make_samples(rec, nr_samples_each):
     rec = get_rec(wav_as[0])
 
     root_dir = target_path + id_as + '-' + id_is
-    dir_exists = False
     try:
         os.mkdir(root_dir)
     except:
@@ -470,7 +469,7 @@ def make_samples(rec, nr_samples_each):
                 json.dump(json_data, file, indent=4)
 
             sample_nr += 1
-            ratio = sample_nr/target_amount_samples
+            #ratio = sample_nr/target_amount_samples
             # print(ratio)
             print(str(sample_nr/target_amount_samples*100) + '% created')
 
