@@ -20,22 +20,27 @@ source_dataset = 'KEC - https://clarin.phonetik.uni-muenchen.de/BASRepository/in
 data_path = '/workspace/data/KEC/'
 
 # path to target directory
-target_path = '/workspace/pyroomaccoustics/aaron_workspace/target/'
+target_path = '/workspace/testdata/KEC'
 
 
 """
     simulation settigns
 """
+randomize_room = False
+
 # room generation will be laplace distributed in these intervalls [width, length, height]
-# normal room size: room_dim = [15, 20, 4]
+# normal room size:
+normal_room_dim = [15, 20, 4]
 room_dim_ranges = [[3, 30], [3, 30], [2.5, 5]]
 
 # The amout Walls absorb Sound
-# normal absorption = 1.2
+# normal
+normal_absorption = 1.2
 absorption_range = [1, 2]
 
 # the time it take until the signal drops by 60 dB
-# reverberant room rt60 = 0.5
+# reverberant room
+normal_rt60 = 0.5
 rt60_range = [0.05, 0, 75]
 
 sampleRate = 16000
@@ -102,21 +107,26 @@ def get_rec(wav):
 """
 
 
-def generate_random_room_characteristics():
-    dims: list(int) = [np.random.randint(room_dim_ranges[i, 0], room_dim_ranges[i, 1])
-                       for i in range(len(room_dim_ranges[:]))]
+def generate_room_characteristics():
+    dims,rt60,absorption=0
+    if randomize_room:
+        dims: list(int) = [np.random.randint(room_dim_ranges[i, 0], room_dim_ranges[i, 1])
+                           for i in range(len(room_dim_ranges[:]))]
 
-    rt60: float = rt60_range[0] + \
-        (rt60_range[1]-rt60_range[0])*np.random.random()
+        rt60: float = rt60_range[0] + \
+            (rt60_range[1]-rt60_range[0])*np.random.random()
 
-    absorption: float = absorption_range[0] + \
-        (absorption_range[1]-absorption_range[0]) * np.random.random()
+        absorption: float = absorption_range[0] + \
+            (absorption_range[1]-absorption_range[0]) * np.random.random()
+
+    else:
+        dims = normal_room_dim
+        rt60 = normal_rt60
+        absorption = normal_absorption
 
     return dims, rt60, absorption
 
 # generates random positon inside the room, height is fixed on 1.73 at the moment
-
-
 def random_pos(room_dim):
     pos = [random.random() * (room_dim[0] - 1), random.random()
            * (room_dim[1] - 1), 1.73]
@@ -203,8 +213,6 @@ def get_directivities(positions):
 """
 
 # opens wave file for specified intervall, creates positions and dirs
-
-
 def create_wav(speaker1, t1, speaker2, t2, curr_dir):
 
     offset = t1[0]
@@ -212,7 +220,7 @@ def create_wav(speaker1, t1, speaker2, t2, curr_dir):
     wav1, _ = librosa.load(speaker1, sr=sampleRate,
                            offset=offset, duration=duration, mono=True)
     #wav1 = librosa.util.normalize(wav1)
-
+    print(wav1[:20])
     offset = t2[0]
     duration2 = t2[1] - offset
     wav2, _ = librosa.load(speaker2, sr=sampleRate,
@@ -260,7 +268,7 @@ def mix_audio(audio1, audio2, positions, dirs, curr_path):
         directivites.append(make_dir_cardioid(dir))
 
     mics_pos = get_pos_mics(positions[0], dirs[0])
-    room_dim, rt60, absorption = generate_random_room_characteristics()
+    room_dim, rt60, absorption = generate_room_characteristics()
     e_absortion, max_order = pra.inverse_sabine(rt60, room_dim)
     room: pra.ShoeBox = pra.ShoeBox(room_dim, fs=sampleRate, materials=pra.Material(
         e_absortion), absorption=absorption, max_order=max_order)
@@ -276,7 +284,7 @@ def mix_audio(audio1, audio2, positions, dirs, curr_path):
     room.add_microphone_array(mic_array)
 
     room.simulate()
-
+#dreimal der selbe export?
     room.mic_array.to_wav(curr_path + '/' + str(sample_nr) +
                           '.wav', norm=True, bitdepth=np.float32)
     room.mic_array.to_wav(curr_path + '/speaker2.wav',
@@ -401,6 +409,7 @@ def make_samples(rec, nr_samples_each):
     id_is = get_id(wav_is[0])
     rec = get_rec(wav_as[0])
 
+    # Create clean / empty dir
     root_dir = target_path + id_as + '-' + id_is
     try:
         os.mkdir(root_dir)
@@ -408,7 +417,9 @@ def make_samples(rec, nr_samples_each):
         shutil.rmtree(root_dir)
         os.mkdir(root_dir)
 
+    # foreach file
     for i in range(len(wav_as)):
+        #get single file
         w_as = wav_as.pop()
         w_is = wav_is.pop()
 
@@ -416,7 +427,7 @@ def make_samples(rec, nr_samples_each):
         txt_as = list(get_matching_txt(w_as, txt))
 
         try:
-            tg_as = textgrid.TextGrid.fromFile(current_path + txt_as[0])
+            tg_as = textgrid.TextGrid.fromFile(current_path + txt_as[0]) # muss das ticht txt_as[i] sein?
             tg_is = textgrid.TextGrid.fromFile(current_path + txt_is[0])
 
         except:
