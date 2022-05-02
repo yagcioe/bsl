@@ -108,7 +108,7 @@ def get_rec(wav):
 
 
 def generate_room_characteristics():
-    dims,rt60,absorption=0
+    dims, rt60, absorption = 0
     if randomize_room:
         dims: list(int) = [np.random.randint(room_dim_ranges[i, 0], room_dim_ranges[i, 1])
                            for i in range(len(room_dim_ranges[:]))]
@@ -127,6 +127,8 @@ def generate_room_characteristics():
     return dims, rt60, absorption
 
 # generates random positon inside the room, height is fixed on 1.73 at the moment
+
+
 def random_pos(room_dim):
     pos = [random.random() * (room_dim[0] - 1), random.random()
            * (room_dim[1] - 1), 1.73]
@@ -172,16 +174,14 @@ def position_check(positions):
     return True
 
 
-# turns clockwise angle into counter-clockwise
-def angle_trunc(a):
-    while a < 0.0:
-        a += math.pi * 2
-    return a
-
 # returns angle between two points in degrees
-
-
 def get_angle(a, b):
+    # turns clockwise angle into counter-clockwise
+    def angle_trunc(a):
+        while a < 0.0:
+            a += math.pi * 2
+        return a
+
     deltaY = b[1] - a[1]
     deltaX = b[0] - a[0]
     return math.degrees(angle_trunc(math.atan2(deltaY, deltaX)))
@@ -213,6 +213,8 @@ def get_directivities(positions):
 """
 
 # opens wave file for specified intervall, creates positions and dirs
+
+
 def create_wav(speaker1, t1, speaker2, t2, curr_dir):
 
     offset = t1[0]
@@ -284,7 +286,7 @@ def mix_audio(audio1, audio2, positions, dirs, curr_path):
     room.add_microphone_array(mic_array)
 
     room.simulate()
-#dreimal der selbe export?
+# dreimal der selbe export?
     room.mic_array.to_wav(curr_path + '/' + str(sample_nr) +
                           '.wav', norm=True, bitdepth=np.float32)
     room.mic_array.to_wav(curr_path + '/speaker2.wav',
@@ -419,7 +421,7 @@ def make_samples(rec, nr_samples_each):
 
     # foreach file
     for i in range(len(wav_as)):
-        #get single file
+        # get single file
         w_as = wav_as.pop()
         w_is = wav_is.pop()
 
@@ -427,7 +429,8 @@ def make_samples(rec, nr_samples_each):
         txt_as = list(get_matching_txt(w_as, txt))
 
         try:
-            tg_as = textgrid.TextGrid.fromFile(current_path + txt_as[0]) # muss das ticht txt_as[i] sein?
+            # muss das ticht txt_as[i] sein?
+            tg_as = textgrid.TextGrid.fromFile(current_path + txt_as[0])
             tg_is = textgrid.TextGrid.fromFile(current_path + txt_is[0])
 
         except:
