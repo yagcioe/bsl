@@ -305,8 +305,6 @@ def mix_audio(audio1, audio2, positions, dirs, curr_path):
 """
 
 #
-
-
 def get_words_with_timestamps(timestamps_as, timestamps_is, j, word_as, word_is, word_ts_as, word_ts_is):
     max_as = timestamps_as[j][1]
     min_as = timestamps_as[j][0]
