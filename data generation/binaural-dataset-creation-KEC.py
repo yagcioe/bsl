@@ -360,7 +360,7 @@ def split_sentence(tg):
         words.append(text)
         w_timestamp.append([minTime, maxTime])
         counter += 1
-
+        np.round()
         if '<P>' in text and maxTime - sentence_start < max_audio_length and maxTime - sentence_start >= 5 and len(sentence) > min_characters:
             sentences.append(sentence)
             sentence = ''
