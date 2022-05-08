@@ -1,5 +1,3 @@
-
-
 class Timestamp:
 
     def __init__(self, start: float, end: float):

@@ -3,11 +3,11 @@ import numpy as np
 import pyroomacoustics as pra
 from pyroomacoustics.directivities \
     import (CardioidFamily, DirectionVector, DirectivityPattern)
-import parameters as param
+import environment as env
 import math
 
 def loadWavFile(path, offset=0, duration=None):
-    wav, sr = librosa.load(path, sr=param.sampleRate, offset=offset,
+    wav, sr = librosa.load(path, sr=env.sampleRate, offset=offset,
                            duration=duration, mono=True)
     wav = librosa.util.normalize(wav)
     # for i in range(3):
@@ -25,7 +25,7 @@ def makeCardioid(direction):
 
 def createRoom(room_dim, rt60, absorption):
     e_absortion, max_order = pra.inverse_sabine(rt60, room_dim)
-    room: pra.ShoeBox = pra.ShoeBox(room_dim, fs=param.sampleRate, materials=pra.Material(
+    room: pra.ShoeBox = pra.ShoeBox(room_dim, fs=env.sampleRate, materials=pra.Material(
         e_absortion), absorption=absorption, max_order=max_order)
     return room
 
@@ -69,7 +69,7 @@ def trackEndingLatest(tracks):
 
 
 def makeTimeOffsets(timeStamps):
-    tracks = [[]for i in range(param.maxSpeakerAtOnce)]
+    tracks = [[]for i in range(env.maxSpeakerAtOnce)]
     for ts in timeStamps:
         ts.setOffset(0)
     tracks[0].append(timeStamps[0])
@@ -80,10 +80,10 @@ def makeTimeOffsets(timeStamps):
 
         minTimeOffset = 0 if len(
             tracks[posOfLastTrack]) == 0 else tracks[posOfLastTrack][-1].endTime
-        minTimeOffset = max(minTimeOffset - param.max_speach_overlap, 0)
+        minTimeOffset = max(minTimeOffset - env.max_speach_overlap, 0)
         maxTimeOffset = 0 if len(
             tracks[posOfLastTrack]) == 0 else tracks[posOfLastTrack][-1].endTime
-        maxTimeOffset = maxTimeOffset + param.maxTimeDistanceBetweenSpeakers
+        maxTimeOffset = maxTimeOffset + env.maxTimeDistanceBetweenSpeakers
 
         offset = np.random.rand()*(maxTimeOffset-minTimeOffset) + minTimeOffset
         s.setOffset(offset)
@@ -98,7 +98,7 @@ def mixRoom(room: pra.ShoeBox, listenerEarPositions, listenerEarDirs, speakerPos
         [d[0]+math.pi, d[1]]), speakerDirs))  # turn speaker around
 
     mic_array = pra.MicrophoneArray(
-        np.c_[listenerEarPositions[0], listenerEarPositions[1]], directivity=listenerEarDirs, fs=param.sampleRate)
+        np.c_[listenerEarPositions[0], listenerEarPositions[1]], directivity=listenerEarDirs, fs=env.sampleRate)
 
     for i in range(len(speakerPositions)):
         room.add_source(

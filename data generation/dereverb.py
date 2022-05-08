@@ -1,7 +1,7 @@
 import soundfile
 import numpy as np
 import parameters as param
-import pyo
+# import pyo
 
 def deReverb(wav):
     wi = phaseInvert(wav)

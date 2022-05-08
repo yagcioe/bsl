@@ -3,7 +3,7 @@ import numpy as np
 import os
 import textgrid
 from timestamp import SentenceWithTimestamp
-import parameters as param
+import environment as env
 from wavTools import loadWavFile
 
 
@@ -88,7 +88,7 @@ def split_sentence(textGrid: textgrid.textgrid.TextGrid):
             print('hierfehltderUmlat')
         # if found break wich is longer than 1 sec
         if re.search(specialWordsRegex, word.mark) != None and (word.maxTime-word.minTime) > maxSentencePause:
-            if len(sentence) >= param.min_words_per_sentence:
+            if len(sentence) >= env.min_words_per_sentence:
                 sentences.append(SentenceWithTimestamp(
                     sentence, startTime, word.minTime))
             sentence = []
@@ -119,7 +119,7 @@ def VoiceLineGeneratorKEC(count, voicesPerSample):
                 random_file = np.random.randint(0, len(tupelList))
                 randomText, randomWav = tupelList[random_file]
 
-                while param.prevent_SameRecordingInSampleTwice and getRec(randomText) in usedRec:
+                while env.prevent_SameRecordingInSampleTwice and getRec(randomText) in usedRec:
                     print('tried to use same recoring twice')
                     random_file = np.random.randint(0, len(tupelList))
                     randomText, randomWav = tupelList[random_file]

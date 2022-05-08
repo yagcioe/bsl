@@ -1,6 +1,7 @@
 
 import matplotlib.pyplot as plt
-import parameters as param
+import environment as env
+
 import util
 
 def scatterplot3d(points, dims):
@@ -31,8 +32,8 @@ def plotDirectivities(base, middle, baseRefDirs, pos, posDirs, roomCorners):
 
     arrowLen = 5
     plt.figure(figsize=(10,10))
-    plt.xlim(-param.room_dim_ranges[0][1], param.room_dim_ranges[0][1])
-    plt.ylim(-param.room_dim_ranges[1][1], param.room_dim_ranges[1][1])
+    plt.xlim(-env.room_dim_ranges[0][1], env.room_dim_ranges[0][1])
+    plt.ylim(-env.room_dim_ranges[1][1], env.room_dim_ranges[1][1])
 
     a = roomCorners[0]
     b = roomCorners[1]
