@@ -5,7 +5,7 @@ target_amount_samples = 10
 skipSamples = 0
 target_dir = '/workspace/training/KEC'
 visualize = True
-verbose = False
+verbose = 1
 
 prevent_SameRecordingInSampleTwice = False
 

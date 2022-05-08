@@ -1,5 +1,7 @@
 import os
 import shutil
+from tabnanny import verbose
+import traceback
 import numpy as np
 import math
 import soundfile
@@ -18,6 +20,7 @@ env.overrideParams()
 
 """Room Functions"""
 
+
 def generate_room_characteristics():
     dims = rt60 = absorption = 0
     if env.randomize_room:
@@ -28,7 +31,8 @@ def generate_room_characteristics():
             (env.rt60_range[1]-env.rt60_range[0])*np.random.random()
 
         absorption: float = env.absorption_range[0] + \
-            (env.absorption_range[1]-env.absorption_range[0]) * np.random.random()
+            (env.absorption_range[1] -
+             env.absorption_range[0]) * np.random.random()
 
     else:
         dims = env.normal_room_dim
@@ -114,10 +118,9 @@ def point_pos(x, d, theta):
     return [x[0] + d * math.cos(theta_rad), x[1] + d*math.sin(theta_rad), x[2]]
 
 
-
-
-
 """Exporting training data"""
+
+
 def createJsonData(sampleNr: int, speakerIdsList, listenerPos, listenerDir,
                    speakrePositionList, speakerDirections, timestamps, words=None):
     speakers = []
@@ -132,7 +135,7 @@ def createJsonData(sampleNr: int, speakerIdsList, listenerPos, listenerDir,
             'startTime': timestamps[i].startTime,
             'endTime': timestamps[i].endTime,
             'duration': timestamps[i].duration,
-            'words': timestamps[i].sentence if hasattr(timestamps[i],'sentence')  else []
+            'words': timestamps[i].sentence if hasattr(timestamps[i], 'sentence') else []
         }
         speakers.append(speaker)
 
@@ -170,15 +173,15 @@ def createFolder(targetFolder):
         os.mkdir(targetFolder)
 
 
-def exportSample(sampleNr:int, room, wavs, json_data:any):
+def exportSample(sampleNr: int, roomWav, wavs, json_data: any):
     folder = env.target_dir+'/'+str(sampleNr)
     createFolder(folder)
-    wavTools.exportRoom(room, folder+'/room.wav')
+    # wavTools.exportRoom(room, folder+'/room.wav')
+    soundfile.write(folder+'/room.wav', roomWav, env.sampleRate)
     for i in range(len(wavs)):
         soundfile.write(folder+f'/speaker{i}.wav', wavs[i], env.sampleRate)
-    with open(folder+'/description.json', 'w',encoding='utf8') as file:
-        json.dump(json_data, file, indent=4,ensure_ascii=False)
-
+    with open(folder+'/description.json', 'w', encoding='utf8') as file:
+        json.dump(json_data, file, indent=4, ensure_ascii=False)
 
 
 """MAIN"""
@@ -186,7 +189,8 @@ def exportSample(sampleNr:int, room, wavs, json_data:any):
 
 def generate():
     sampleNr = env.skipSamples
-    gen = VoiceLineGeneratorKEC(env.target_amount_samples, env.speakers_in_room)
+    gen = VoiceLineGeneratorKEC(
+        env.target_amount_samples, env.speakers_in_room)
     for (wavs, timestamps) in gen:
         sampleNr += 1
         try:
@@ -195,7 +199,8 @@ def generate():
             dims, rt60, absorption = generate_room_characteristics()
             room = wavTools.createRoom(dims, rt60, absorption)
 
-            pos, dirs,middle, baseAnlge = random_persons_in_room(dims, env.speakers_in_room+1)
+            pos, dirs, middle, baseAnlge = random_persons_in_room(
+                dims, env.speakers_in_room+1)
             listener_pos = pos[0]
             listener_dir = dirs[0]
             speakerPos = pos[1:]
@@ -209,34 +214,39 @@ def generate():
                 visual.plotTracks(tracks)
                 visual.customPlot(pos, middle, dirs, baseAnlge, dims)
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
-                        speakerDir, wavs, timestamps)
+                                    speakerDir, wavs, timestamps)
             room.simulate()
-
 
             allListenerPos = [listener_pos]
             allListenerPos.extend(earPos)
-            
+
             allListenerDirs = [listener_dir]
             allListenerDirs.extend(earDirs)
 
-            #correct agnles offset
+            # correct agnles offset
             allListenerPos = [util.rotateAroundPoint(v, listener_pos, -baseAnlge)
-                for v in allListenerPos]
+                              for v in allListenerPos]
             speakerPos = [util.rotateAroundPoint(v, listener_pos, -baseAnlge)
-                        for v in speakerPos]
+                          for v in speakerPos]
             allListenerDirs = [[d[0]-baseAnlge, d[1]] for d in allListenerDirs]
             speakerDir = [[d[0]-baseAnlge, d[1]] for d in speakerDir]
 
             json_data = createJsonData(sampleNr, range(
                 len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
-            exportSample(sampleNr, room, wavs, json_data)
+            roomWav = np.swapaxes(room.mic_array.signals, 0, 1)
 
-            msg = f'Generated Room Nr.{sampleNr}.'
-            print(msg)
+            if env.verbose > 0:
+                msg = f'Generated Room Nr.{sampleNr}.'
+                print(msg)
+            yield sampleNr, roomWav, wavs, json_data
         except Exception as e:
-            sampleNr-=1
-            print('error' + str(e))
+            sampleNr -= 1
+            if verbose > 0:
+                print('error ' + str(e))
+                traceback.print_exc()
 
 
 if __name__ == '__main__':
-    generate()
+    generator = generate()
+    for (sampleNr, roomWav, wavs, json_data) in generator:
+        exportSample(sampleNr, roomWav, wavs, json_data)
