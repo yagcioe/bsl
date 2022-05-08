@@ -228,20 +228,23 @@ def generate():
                               for v in allListenerPos]
             speakerPos = [util.rotateAroundPoint(v, listener_pos, -baseAnlge)
                           for v in speakerPos]
-            allListenerDirs = [[util.boundAngle(d[0]-baseAnlge), d[1]] for d in allListenerDirs]
-            speakerDir = [[util.boundAngle(d[0]-baseAnlge), d[1]] for d in speakerDir]
+            allListenerDirs = [
+                [util.boundAngle(d[0]-baseAnlge), d[1]] for d in allListenerDirs]
+            speakerDir = [[util.boundAngle(d[0]-baseAnlge), d[1]]
+                          for d in speakerDir]
 
             json_data = createJsonData(sampleNr, range(
                 len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
             roomWav = np.swapaxes(room.mic_array.signals, 0, 1)
 
+            
             if env.verbose > 0:
                 msg = f'Generated Room Nr.{sampleNr}.'
                 print(msg)
             yield sampleNr, roomWav, wavs, json_data
         except Exception as e:
             sampleNr -= 1
-            if verbose > 0:
+            if env.verbose > 0:
                 print('error ' + str(e))
                 traceback.print_exc()
 
