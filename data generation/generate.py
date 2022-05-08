@@ -8,32 +8,32 @@ import json
 from pprint import pprint
 from KecFileGenerator import VoiceLineGeneratorKEC
 from dereverb import deReverb
-import parameters as param
+import environment as env
 import wavTools
 import util
 import visualization as visual
 
-
+env.overrideParams()
 
 
 """Room Functions"""
 
 def generate_room_characteristics():
     dims = rt60 = absorption = 0
-    if param.randomize_room:
-        dims = [np.random.randint(param.room_dim_ranges[i][0], param.room_dim_ranges[i][1])
-                for i in range(len(param.room_dim_ranges[:]))]
+    if env.randomize_room:
+        dims = [np.random.randint(env.room_dim_ranges[i][0], env.room_dim_ranges[i][1])
+                for i in range(len(env.room_dim_ranges[:]))]
 
-        rt60: float = param.rt60_range[0] + \
-            (param.rt60_range[1]-param.rt60_range[0])*np.random.random()
+        rt60: float = env.rt60_range[0] + \
+            (env.rt60_range[1]-env.rt60_range[0])*np.random.random()
 
-        absorption: float = param.absorption_range[0] + \
-            (param.absorption_range[1]-param.absorption_range[0]) * np.random.random()
+        absorption: float = env.absorption_range[0] + \
+            (env.absorption_range[1]-env.absorption_range[0]) * np.random.random()
 
     else:
-        dims = param.normal_room_dim
-        rt60 = param.normal_rt60
-        absorption = param.normal_absorption
+        dims = env.normal_room_dim
+        rt60 = env.normal_rt60
+        absorption = env.normal_absorption
 
     return dims, rt60, absorption
 
@@ -58,7 +58,7 @@ def positions_too_close(positions):
 def anlges_too_small(dirs):
     for i in range(len(dirs)):
         for j in range(i+1, len(dirs)):
-            if(dirs[i][0]-dirs[j][0] < param.min_angle):
+            if(dirs[i][0]-dirs[j][0] < env.min_angle):
                 return True
     return False
 
@@ -101,8 +101,8 @@ def random_persons_in_room(roomDims, count):
 def get_pos_mics(position, dir):
     dirLeft = [dir[0]+math.pi/2, dir[1]]
     dirRight = [dir[0] - math.pi/2, dir[1]]
-    posLeft = point_pos(position, param.head_size/2, dirLeft[0])
-    posRight = point_pos(position, param.head_size/2, dirRight[0])
+    posLeft = point_pos(position, env.head_size/2, dirLeft[0])
+    posRight = point_pos(position, env.head_size/2, dirRight[0])
 
     return [posLeft, posRight], [dirLeft, dirRight]
 
@@ -157,7 +157,7 @@ def createJsonData(sampleNr: int, speakerIdsList, listenerPos, listenerDir,
                     'colatitude': listenerDir[2][1],
                 },
             },
-            'source': param.source_dataset
+            'source': env.source_dataset
         }
     }
 
@@ -171,11 +171,11 @@ def createFolder(targetFolder):
 
 
 def exportSample(sampleNr:int, room, wavs, json_data:any):
-    folder = param.target_dir+'/'+str(sampleNr)
+    folder = env.target_dir+'/'+str(sampleNr)
     createFolder(folder)
     wavTools.exportRoom(room, folder+'/room.wav')
     for i in range(len(wavs)):
-        soundfile.write(folder+f'/speaker{i}.wav', wavs[i], param.sampleRate)
+        soundfile.write(folder+f'/speaker{i}.wav', wavs[i], env.sampleRate)
     with open(folder+'/description.json', 'w',encoding='utf8') as file:
         json.dump(json_data, file, indent=4,ensure_ascii=False)
 
@@ -185,8 +185,8 @@ def exportSample(sampleNr:int, room, wavs, json_data:any):
 
 
 def generate():
-    sampleNr = param.skipSamples
-    gen = VoiceLineGeneratorKEC(param.target_amount_samples, param.speakers_in_room)
+    sampleNr = env.skipSamples
+    gen = VoiceLineGeneratorKEC(env.target_amount_samples, env.speakers_in_room)
     for (wavs, timestamps) in gen:
         sampleNr += 1
         try:
@@ -195,7 +195,7 @@ def generate():
             dims, rt60, absorption = generate_room_characteristics()
             room = wavTools.createRoom(dims, rt60, absorption)
 
-            pos, dirs,middle, baseAnlge = random_persons_in_room(dims, param.speakers_in_room+1)
+            pos, dirs,middle, baseAnlge = random_persons_in_room(dims, env.speakers_in_room+1)
             listener_pos = pos[0]
             listener_dir = dirs[0]
             speakerPos = pos[1:]
@@ -205,7 +205,7 @@ def generate():
 
             # creating data
             tracks = wavTools.makeTimeOffsets(timestamps)
-            if param.visualize:
+            if env.visualize:
                 visual.plotTracks(tracks)
                 visual.customPlot(pos, middle, dirs, baseAnlge, dims)
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
