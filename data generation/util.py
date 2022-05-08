@@ -43,7 +43,7 @@ def rotateAroundPoint(v, base, angle):
 
 
 def boundAngle(angle):
-    while(angle < math.pi):
+    while(angle < -math.pi):
         angle += math.pi
     while(angle > math.pi):
         angle = angle-math.pi
