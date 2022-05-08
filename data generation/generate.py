@@ -62,7 +62,7 @@ def positions_too_close(positions):
 def anlges_too_small(dirs):
     for i in range(len(dirs)):
         for j in range(i+1, len(dirs)):
-            if(dirs[i][0]-dirs[j][0] < env.min_angle):
+            if(abs(dirs[i][0]-dirs[j][0]) < env.min_angle):
                 return True
     return False
 
@@ -103,8 +103,8 @@ def random_persons_in_room(roomDims, count):
 
 
 def get_pos_mics(position, dir):
-    dirLeft = [dir[0]+math.pi/2, dir[1]]
-    dirRight = [dir[0] - math.pi/2, dir[1]]
+    dirLeft = [util.boundAngle(dir[0]+math.pi/2), dir[1]]
+    dirRight = [util.boundAngle(dir[0] - math.pi/2), dir[1]]
     posLeft = point_pos(position, env.head_size/2, dirLeft[0])
     posRight = point_pos(position, env.head_size/2, dirRight[0])
 
@@ -228,8 +228,8 @@ def generate():
                               for v in allListenerPos]
             speakerPos = [util.rotateAroundPoint(v, listener_pos, -baseAnlge)
                           for v in speakerPos]
-            allListenerDirs = [[d[0]-baseAnlge, d[1]] for d in allListenerDirs]
-            speakerDir = [[d[0]-baseAnlge, d[1]] for d in speakerDir]
+            allListenerDirs = [[util.boundAngle(d[0]-baseAnlge), d[1]] for d in allListenerDirs]
+            speakerDir = [[util.boundAngle(d[0]-baseAnlge), d[1]] for d in speakerDir]
 
             json_data = createJsonData(sampleNr, range(
                 len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
