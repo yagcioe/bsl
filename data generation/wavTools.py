@@ -6,6 +6,7 @@ from pyroomacoustics.directivities \
 import environment as env
 import math
 
+
 def loadWavFile(path, offset=0, duration=None):
     wav, sr = librosa.load(path, sr=env.sampleRate, offset=offset,
                            duration=duration, mono=True)
@@ -18,8 +19,8 @@ def loadWavFile(path, offset=0, duration=None):
 def makeCardioid(direction):
     return CardioidFamily(
         orientation=DirectionVector(
-            azimuth=direction[0], colatitude=direction[1], degrees=True),
-        pattern_enum=DirectivityPattern.CARDIOID,
+            azimuth=direction[0], colatitude=direction[1], degrees=False),
+        pattern_enum=DirectivityPattern.CARDIOID
     )
 
 
