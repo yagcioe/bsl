@@ -1,12 +1,15 @@
 import soundfile
 import numpy as np
+import parameters as param
+import pyo
 
-def deReverb(wav, sr):
+def deReverb(wav):
     wi = phaseInvert(wav)
-    trash, wi = compress(wi, 47, 10, 0, 5, 70, sr)
+    trash, wi = compress(wi, 47, 10, 0, 5, 70, param.sampleRate)
     print(wi)
     return [wav[i]+wi[i] for i in range(len(wav))]
 
+# does not work :(
 def compress(data, threshold, ratio, makeup, attack, release, sr):
     """
     Reduces dynamic range of input signal by reducing volume above threshold.
@@ -52,14 +55,14 @@ def compress(data, threshold, ratio, makeup, attack, release, sr):
     data_Cs: array containing the compressed waveform in dB
     data_Cs_bit: array containing the compressed waveform in bits.
     """
-    soundfile.read()
+    data = np.array(data)
     data_dB = 20*np.log10(abs(data))
     n = len(data)
     # Array for the compressed data in dB
     dataC = data_dB.copy()
     # attack and release time constant
-    a = np.exp(-np.log10(9)/(44100*attack*1.0E-3))
-    re = np.exp(-np.log10(9)/(44100*release*1.0E-3))
+    a = np.exp(-np.log10(9)/(sr*attack*1.0E-3))
+    re = np.exp(-np.log10(9)/(sr*release*1.0E-3))
     # apply compression
 
     for i in range(n):
