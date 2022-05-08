@@ -37,7 +37,7 @@ absorption_range = [1, 2]
 
 # the time it take until the signal drops by 60 dB
 normal_rt60 = 0.4
-rt60_range = [0.25, 0.75]
+rt60_range = [0.25, 0.6]
 
 
 "AUdio"

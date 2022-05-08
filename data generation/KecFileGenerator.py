@@ -70,7 +70,7 @@ def FileGeneratorsKEC():
             map(lambda f: currentDir+"/"+f, txtFilesOfFolder))
         alltxtFiles.extend(txtFilesOfFolder)
 
-    return allWavfiles, alltxtFiles, allWavTxtTupels
+    return allWavTxtTupels
 
 
 def split_sentence(textGrid: textgrid.textgrid.TextGrid):
@@ -103,9 +103,9 @@ def VoiceLineGeneratorKEC(count, voicesPerSample):
 
     def getRec(path: str):
         split = path.split('/')
-        return '/'.join(split[:-2])
+        return '/'.join(split[:-1])
 
-    allWavPaths, allTxtPaths, tupelList = FileGeneratorsKEC()
+    tupelList = FileGeneratorsKEC()
     for i in range(count):
         w = []
         t = []
@@ -120,7 +120,7 @@ def VoiceLineGeneratorKEC(count, voicesPerSample):
                 randomText, randomWav = tupelList[random_file]
 
                 while env.prevent_SameRecordingInSampleTwice and getRec(randomText) in usedRec:
-                    print('tried to use same recoring twice')
+                    print(f'tried to use same recoring twice: {randomText}: {usedRec}')
                     random_file = np.random.randint(0, len(tupelList))
                     randomText, randomWav = tupelList[random_file]
                 sentences = split_sentence(
