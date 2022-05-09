@@ -180,6 +180,7 @@ def exportSample(sampleNr: int, roomWav, wavs, json_data: any, fig):
         json.dump(json_data, file, indent=4, ensure_ascii=False)
     if(env.exportFigures):
         fig.savefig(folder+"/figure.png", bbox_inches="tight")
+        fig.close()
 
 
 """MAIN"""
