@@ -38,8 +38,15 @@ def rotateAroundPoint(v, base, angle):
     x = np.subtract(v, base)
     x = list(np.dot(rotationMatrix(angle), x[:2]))
     x = np.add(x, base[:2]).tolist()
-    x.append(v[2])    
+    x.append(v[2])
     return x
+
+
+def translate(point, translation):
+    trans = [point[i]-translation[i] for i in range(2)]
+    if len(point) == 3:
+        trans.append(point[2])
+    return trans
 
 
 def boundAngle(angle):

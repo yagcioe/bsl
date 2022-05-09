@@ -1,15 +1,11 @@
 import os
 import shutil
-from tabnanny import verbose
 import traceback
 import numpy as np
 import math
 import soundfile
 import json
-
-from pprint import pprint
 from KecFileGenerator import VoiceLineGeneratorKEC
-from dereverb import deReverb
 import environment as env
 import wavTools
 import util
@@ -231,6 +227,9 @@ def generate():
                               for v in allListenerPos]
             speakerPos = [util.rotateAroundPoint(v, listener_pos, -baseAnlge)
                           for v in speakerPos]
+            allListenerPos = [util.translate(
+                p, listener_pos) for p in allListenerPos]
+            speakerPos = [util.translate(p, listener_pos) for p in speakerPos]
             allListenerDirs = [
                 [util.boundAngle(d[0]-baseAnlge), d[1]] for d in allListenerDirs]
             speakerDir = [[util.boundAngle(d[0]-baseAnlge), d[1]]

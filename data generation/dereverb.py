@@ -1,11 +1,10 @@
 from pedalboard import Pedalboard, Compressor, Mix, Gain, Invert
 import environment as env
-# import pyo
 
 
 def buildPedalBoard(stacks) -> Pedalboard:
     def invertedCompression():
-        return Pedalboard(plugins=[Invert(), Compressor(threshold_db=-55, ratio=10, attack_ms=0.05, release_ms=65)])
+        return Pedalboard(plugins=[Invert(), Compressor(threshold_db=-53, ratio=10, attack_ms=0.05, release_ms=65)])
 
     def deverbStack():
         return Mix([invertedCompression(), Gain(gain_db=0)])

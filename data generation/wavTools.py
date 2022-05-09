@@ -5,14 +5,15 @@ from pyroomacoustics.directivities \
     import (CardioidFamily, DirectionVector, DirectivityPattern)
 import environment as env
 import math
+from dereverb import deReverb
 
 
 def loadWavFile(path, offset=0, duration=None):
     wav, sr = librosa.load(path, sr=env.sampleRate, offset=offset,
                            duration=duration, mono=True)
     wav = librosa.util.normalize(wav)
-    # for i in range(3):
-    #     wav = deReverb(wav)
+    wav = deReverb(wav)
+    
     return wav
 
 
