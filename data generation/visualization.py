@@ -78,13 +78,8 @@ def listenerSpeakerColors(count: int):
 
 
 
-def customPlot(positions, middle, dirs, baseAngle, roomDims):
+def customPlot(positions, middle, dirs, baseAngle, roomDims, exportPath=None):
     plt.figure(figsize=(10,10))
-    #plt.subplot(131)
-    #scatterplot3d(positions, roomDims)
-    #plt.show()
-    #plt.subplot(132)
-
     positions = positions.copy()
     dirs = dirs.copy()
     roomDims = roomDims.copy()
@@ -94,11 +89,6 @@ def customPlot(positions, middle, dirs, baseAngle, roomDims):
     d = [roomDims[0], roomDims[1], 0]
     roomCorners = [a, b, c, d]
 
-    plotDirectivities(positions[0], middle, dirs[0],
-                      positions[1:], dirs[1:], roomCorners)
-
-    plt.show()
-    #plt.subplot(133)
     positions = [util.rotateAroundPoint(v, positions[0], -baseAngle)
                  for v in positions]
     roomCorners = [util.rotateAroundPoint(v, positions[0], -baseAngle)
@@ -107,8 +97,12 @@ def customPlot(positions, middle, dirs, baseAngle, roomDims):
     middle = util.rotateAroundPoint(middle,positions[0],-baseAngle)
     plotDirectivities(positions[0], middle, dirs[0],
                       positions[1:], dirs[1:], roomCorners)
-
-    plt.show()
+    fig = plt.gcf()
+    if(exportPath!=None):
+        plt.savefig(exportPath,bbox_inches="tight")
+    if(env.visualize):
+        plt.show()
+    return fig
 
 
 def plotTracks(tracks):

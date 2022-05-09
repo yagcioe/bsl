@@ -173,7 +173,7 @@ def createFolder(targetFolder):
         os.mkdir(targetFolder)
 
 
-def exportSample(sampleNr: int, roomWav, wavs, json_data: any):
+def exportSample(sampleNr: int, roomWav, wavs, json_data: any, fig):
     folder = env.target_dir+'/'+str(sampleNr)
     createFolder(folder)
     # wavTools.exportRoom(room, folder+'/room.wav')
@@ -182,6 +182,8 @@ def exportSample(sampleNr: int, roomWav, wavs, json_data: any):
         soundfile.write(folder+f'/speaker{i}.wav', wavs[i], env.sampleRate)
     with open(folder+'/description.json', 'w', encoding='utf8') as file:
         json.dump(json_data, file, indent=4, ensure_ascii=False)
+    if(env.exportFigures):
+        fig.savefig(folder+"/figure.png", bbox_inches="tight")
 
 
 """MAIN"""
@@ -212,7 +214,8 @@ def generate():
             tracks = wavTools.makeTimeOffsets(timestamps)
             if env.visualize:
                 visual.plotTracks(tracks)
-                visual.customPlot(pos, middle, dirs, baseAnlge, dims)
+            fig = visual.customPlot(pos, middle, dirs, baseAnlge, dims)
+
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
                                     speakerDir, wavs, timestamps)
             room.simulate()
@@ -237,11 +240,10 @@ def generate():
                 len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
             roomWav = np.swapaxes(room.mic_array.signals, 0, 1)
 
-            
             if env.verbose > 0:
                 msg = f'Generated Room Nr.{sampleNr}.'
                 print(msg)
-            yield sampleNr, roomWav, wavs, json_data
+            yield sampleNr, roomWav, wavs, json_data, fig
         except Exception as e:
             sampleNr -= 1
             if env.verbose > 0:
@@ -251,5 +253,5 @@ def generate():
 
 if __name__ == '__main__':
     generator = generate()
-    for (sampleNr, roomWav, wavs, json_data) in generator:
-        exportSample(sampleNr, roomWav, wavs, json_data)
+    for (sampleNr, roomWav, wavs, json_data, fig) in generator:
+        exportSample(sampleNr, roomWav, wavs, json_data, fig)
