@@ -1,13 +1,25 @@
+import time
 import wavTools
 import dereverb
 import soundfile
-import parameters as param
+import environment as env
 
 def run():
     wav = wavTools.loadWavFile('/workspace/training/KEC/2/speaker0.wav')
-    tr ,comp = dereverb.compress(wav, 47, 10, 0, 5, 70, param.sampleRate)
-    soundfile.write('/workspace/training/KEC/2/speaker0CompTr.wav',tr , param.sampleRate)
-    soundfile.write('/workspace/training/KEC/2/speaker0CompCMP.wav',comp , param.sampleRate)
-    
+    print(wav)
+    print(wav.shape)
     derv = dereverb.deReverb(wav)
-    soundfile.write('/workspace/training/KEC/2/speaker0Derev.wav',derv , param.sampleRate)
+    print(derv)
+    print(derv.shape)
+    soundfile.write('/workspace/training/KEC/2/speaker0Derev.wav',derv , env.sampleRate)
+
+def speedTest():
+    n=1000
+    start = time.time_ns()
+    for i in range(n):
+        if(i%100==0):print(str(i)+"/"+str(n))
+        wav = wavTools.loadWavFile('/workspace/training/KEC/2/speaker0.wav')
+    
+    for i in range(n):
+        if(i%100==0):print(str(i)+"/"+str(n))
+        wav = wavTools.loadWavFile('/workspace/training/KEC/2/speaker0.wav')

@@ -37,9 +37,9 @@ def rotationMatrix(angle):
 def rotateAroundPoint(v, base, angle):
     x = np.subtract(v, base)
     x = list(np.dot(rotationMatrix(angle), x[:2]))
-    x.append(v[2])
-    x = np.add(x, base)
-    return x.tolist()
+    x = np.add(x, base[:2]).tolist()
+    x.append(v[2])    
+    return x
 
 
 def boundAngle(angle):
