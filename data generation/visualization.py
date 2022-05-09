@@ -79,7 +79,6 @@ def listenerSpeakerColors(count: int):
 
 
 def customPlot(positions, middle, dirs, baseAngle, roomDims):
-    plt.figure(figsize=(10,10))
     positions = positions.copy()
     dirs = dirs.copy()
     roomDims = roomDims.copy()
