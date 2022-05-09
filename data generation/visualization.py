@@ -78,7 +78,7 @@ def listenerSpeakerColors(count: int):
 
 
 
-def customPlot(positions, middle, dirs, baseAngle, roomDims, exportPath=None):
+def customPlot(positions, middle, dirs, baseAngle, roomDims):
     plt.figure(figsize=(10,10))
     positions = positions.copy()
     dirs = dirs.copy()
@@ -98,10 +98,10 @@ def customPlot(positions, middle, dirs, baseAngle, roomDims, exportPath=None):
     plotDirectivities(positions[0], middle, dirs[0],
                       positions[1:], dirs[1:], roomCorners)
     fig = plt.gcf()
-    if(exportPath!=None):
-        plt.savefig(exportPath,bbox_inches="tight")
     if(env.visualize):
         plt.show()
+    else:
+        plt.close()
     return fig
 
 
