@@ -25,10 +25,10 @@ def makeCardioid(direction):
     )
 
 
-def createRoom(room_dim, rt60, absorption):
+def createRoom(room_dim, rt60):
     e_absortion, max_order = pra.inverse_sabine(rt60, room_dim)
     room: pra.ShoeBox = pra.ShoeBox(room_dim, fs=env.sampleRate, materials=pra.Material(
-        e_absortion), absorption=absorption, max_order=max_order)
+        e_absortion), max_order=max_order)
     return room
 
 

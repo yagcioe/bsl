@@ -20,7 +20,7 @@ env.overrideParams()
 
 
 def generate_room_characteristics():
-    dims = rt60 = absorption = 0
+    dims = rt60 = 0
     if env.randomize_room:
         dims = [np.random.randint(env.room_dim_ranges[i][0], env.room_dim_ranges[i][1])
                 for i in range(len(env.room_dim_ranges[:]))]
@@ -28,16 +28,11 @@ def generate_room_characteristics():
         rt60: float = env.rt60_range[0] + \
             (env.rt60_range[1]-env.rt60_range[0])*np.random.random()
 
-        absorption: float = env.absorption_range[0] + \
-            (env.absorption_range[1] -
-             env.absorption_range[0]) * np.random.random()
-
     else:
         dims = env.normal_room_dim
         rt60 = env.normal_rt60
-        absorption = env.normal_absorption
 
-    return dims, rt60, absorption
+    return dims, rt60
 
 
 def random_position_in_room(roomDims):
@@ -198,8 +193,8 @@ def generate():
         try:
             # creating parameters
 
-            dims, rt60, absorption = generate_room_characteristics()
-            room = wavTools.createRoom(dims, rt60, absorption)
+            dims, rt60 = generate_room_characteristics()
+            room = wavTools.createRoom(dims, rt60)
 
             pos, dirs, middle, baseAnlge = random_persons_in_room(
                 dims, env.speakers_in_room+1)
