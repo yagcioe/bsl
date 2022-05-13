@@ -31,20 +31,18 @@ def plotDirectivities(base, middle, baseRefDirs, pos, posDirs, roomCorners):
         return [x[0]-y[0], x[1]-y[1]]
 
     arrowLen = 5
-    plt.figure(figsize=(10,10))
-    plt.xlim(-env.room_dim_ranges[0][1], env.room_dim_ranges[0][1])
-    plt.ylim(-env.room_dim_ranges[1][1], env.room_dim_ranges[1][1])
+    fig = plt.figure(dpi=300)
+    plt.gca().set_aspect('equal', adjustable='box')
 
     a = roomCorners[0]
     b = roomCorners[1]
     c = roomCorners[3]
     d = roomCorners[2]
 
-    plt.arrow(a[0], a[1], sub(b, a)[0], sub(b, a)[1], color='#000')
-    plt.arrow(b[0], b[1], sub(c, b)[0], sub(c, b)[1], color='#000')
-    plt.arrow(c[0], c[1], sub(d, c)[0], sub(d, c)[1], color='#000')
-    plt.arrow(d[0], d[1], sub(a, d)[0], sub(a, d)[1], color='#000')
-    plt.gca().set_aspect('equal', adjustable='box')
+    plt.arrow(a[0], a[1], sub(b, a)[0], sub(b, a)[1], color='#000',head_width=0,head_length=0)
+    plt.arrow(b[0], b[1], sub(c, b)[0], sub(c, b)[1], color='#000',head_width=0,head_length=0)
+    plt.arrow(c[0], c[1], sub(d, c)[0], sub(d, c)[1], color='#000',head_width=0,head_length=0)
+    plt.arrow(d[0], d[1], sub(a, d)[0], sub(a, d)[1], color='#000',head_width=0,head_length=0)
 
     plt.scatter(base[0], base[1], c='#55f9')
     plt.scatter(middle[0], middle[1], c='#5f59')
@@ -57,6 +55,8 @@ def plotDirectivities(base, middle, baseRefDirs, pos, posDirs, roomCorners):
         v = util.toVektor(posDirs[i][0], arrowLen)
         plt.arrow(base[0], base[1], v[0], v[1], color='#f559')
         plt.scatter(pos[i][0], pos[i][1], c='#f559')
+    plt.close()
+    return fig
 
 
 def plot2dPoints(points):
@@ -79,7 +79,7 @@ def listenerSpeakerColors(count: int):
 
 
 def customPlot(positions, middle, dirs, baseAngle, roomDims):
-    positions = positions.copy()
+    positionsC = positions.copy()
     dirs = dirs.copy()
     roomDims = roomDims.copy()
     a = [0, 0, 0]
@@ -88,28 +88,31 @@ def customPlot(positions, middle, dirs, baseAngle, roomDims):
     d = [roomDims[0], roomDims[1], 0]
     roomCorners = [a, b, c, d]
 
+    positions = [util.translate(p,positionsC[0]) for p in positions]
+    middle = util.translate(middle,positionsC[0])
+    roomCorners = [util.translate(c,positionsC[0]) for c in roomCorners]
+
     positions = [util.rotateAroundPoint(v, positions[0], -baseAngle)
                  for v in positions]
     roomCorners = [util.rotateAroundPoint(v, positions[0], -baseAngle)
                    for v in roomCorners]
-    dirs = [[d[0]-baseAngle, d[1]] for d in dirs]
     middle = util.rotateAroundPoint(middle,positions[0],-baseAngle)
-    plotDirectivities(positions[0], middle, dirs[0],
+    dirs = [[d[0]-baseAngle, d[1]] for d in dirs]
+    fig = plotDirectivities(positions[0], middle, dirs[0],
                       positions[1:], dirs[1:], roomCorners)
-    fig = plt.gcf()
-    if(env.visualize):
-        plt.show()
-    else:
-        plt.close()
+    plt.close(fig)
     return fig
 
 
 def plotTracks(tracks):
-    plt.clf()
+    fig = plt.figure(dpi=300)
+    plt.xlabel("Zeit [s]")
+    plt.ylabel("Sprecher")
+    plt.yticks(ticks=range(len(tracks)))
     colors = ['#F55', '#5F5', '#55F']
     for i in range(len(tracks)):
         for s in tracks[i]:
             c = colors[i % len(colors)]
-            plt.arrow(s.startTime, i+0.4, s.duration, 0, color=c, width=0.8,head_width=0)
-    plt.title('Speaker Tracks')
-    plt.show()
+            plt.arrow(s.startTime, i, s.duration, 0, color=c, width=0.8,head_width=0)
+    plt.close(fig)
+    return fig

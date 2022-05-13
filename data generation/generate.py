@@ -2,6 +2,7 @@ import os
 import shutil
 import traceback
 from matplotlib import pyplot as plt
+import matplotlib
 import numpy as np
 import math
 import soundfile
@@ -170,7 +171,7 @@ def createFolder(targetFolder):
         os.mkdir(targetFolder)
 
 
-def exportSample(sampleNr: int, roomWav, wavs, json_data: any, fig):
+def exportSample(sampleNr: int, roomWav, wavs, json_data: any, figs):
     folder = env.target_dir+'/'+str(sampleNr)
     createFolder(folder)
     # wavTools.exportRoom(room, folder+'/room.wav')
@@ -180,8 +181,9 @@ def exportSample(sampleNr: int, roomWav, wavs, json_data: any, fig):
     with open(folder+'/description.json', 'w', encoding='utf8') as file:
         json.dump(json_data, file, indent=4, ensure_ascii=False)
     if(env.exportFigures):
-        fig.savefig(folder+"/figure.png", bbox_inches="tight")
-        plt.close(fig)
+        for i,fig in enumerate(figs):
+            fig.savefig(folder+f'/figure{i}.jpg', bbox_inches="tight")
+            plt.close(fig)
 
 
 """MAIN"""
@@ -206,13 +208,7 @@ def generate():
             speakerPos = pos[1:]
             speakerDir = dirs[1:]
 
-            earPos, earDirs = get_pos_mics(listener_pos, listener_dir)
-
-            # creating data
-            tracks = wavTools.makeTimeOffsets(timestamps)
-            if env.visualize:
-                visual.plotTracks(tracks)
-            fig = visual.customPlot(pos, middle, dirs, baseAnlge, dims)
+            earPos, earDirs = get_pos_mics(listener_pos, listener_dir)                   
 
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
                                     speakerDir, wavs, timestamps)
@@ -241,10 +237,22 @@ def generate():
                 len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
             roomWav = np.swapaxes(room.mic_array.signals, 0, 1)
 
+            # creating data
+            tracks = wavTools.makeTimeOffsets(timestamps)
+            
+            figs =[]
+            if env.visualize or env.exportFigures:
+                figs.append(visual.plotTracks(tracks))
+                figs.append(visual.customPlot(pos, middle, dirs, baseAnlge, dims))
+            if(env.visualize):
+                for fig in figs:
+                    plt.figure(fig)
+                    plt.show()
+
             if env.verbose > 0:
                 msg = f'Generated Room Nr.{sampleNr}.'
                 print(msg)
-            yield sampleNr, roomWav, wavs, json_data, fig
+            yield sampleNr, roomWav, wavs, json_data, figs
         except Exception as e:
             sampleNr -= 1
             if env.verbose > 0:
