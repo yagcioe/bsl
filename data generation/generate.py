@@ -65,18 +65,18 @@ def anlges_too_small(dirs):
 
 
 def transform_to_directivities(positions):
-
     listenerPos = positions[0]
+    speakerPos = positions[1:]
 
-    middle = [util.avg(np.transpose(positions)[i])
-              for i in range(len(positions[0]))]
+    middle = [util.avg(np.transpose(speakerPos)[i])
+              for i in range(len(speakerPos[0]))]
 
     # Winkel aus Vogelperspeltive, in die Listnener guckt
     baseAngle = util.toAngle(listenerPos[:2], middle[:2])
 
     listenerDir = [baseAngle, math.pi/2]
     speakerDirs = [[util.toAngle(listenerPos, pos), math.pi/2]
-                   for pos in positions[1:]]
+                   for pos in speakerPos]
 
     dirs = [listenerDir]
     dirs.extend(speakerDirs)
