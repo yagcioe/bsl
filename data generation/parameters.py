@@ -6,9 +6,11 @@ skipSamples = 0
 target_dir = '/workspace/training/KEC'
 visualize = True
 exportFigures = False
+figureDpi=300
 verbose = 1
 showPerformanceSummary=False
 prevent_SameRecordingInSampleTwice = False
+
 
 "Persons"
 # size of the Listeners head diameter

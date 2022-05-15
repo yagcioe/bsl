@@ -65,18 +65,21 @@ def anlges_too_small(dirs):
 
 
 def transform_to_directivities(positions):
-    dirs = []
+
+    listenerPos = positions[0]
+
     middle = [util.avg(np.transpose(positions)[i])
               for i in range(len(positions[0]))]
 
-    listenerPos = positions[0]
     # Winkel aus Vogelperspeltive, in die Listnener guckt
     baseAngle = util.toAngle(listenerPos[:2], middle[:2])
-    dirs.append([baseAngle, math.pi/2])
 
-    for pos in positions[1:]:
-        dirs.append([util.toAngle(listenerPos, pos), math.pi/2])
+    listenerDir = [baseAngle, math.pi/2]
+    speakerDirs = [[util.toAngle(listenerPos, pos), math.pi/2]
+                   for pos in positions[1:]]
 
+    dirs = [listenerDir]
+    dirs.extend(speakerDirs)
     return dirs, baseAngle, middle
 
 
@@ -185,7 +188,7 @@ def exportSample(sampleNr: int, roomWav, wavs, json_data: any, figs):
     with open(folder+'/description.json', 'w', encoding='utf8') as file:
         json.dump(json_data, file, indent=4, ensure_ascii=False)
     if(env.exportFigures):
-        for i,fig in enumerate(figs):
+        for i, fig in enumerate(figs):
             fig.savefig(folder+f'/figure{i}.jpg', bbox_inches="tight")
             plt.close(fig)
     perf.end()
@@ -199,7 +202,7 @@ def generate():
 
     gen = VoiceLineGeneratorKEC(
         env.target_amount_samples, env.speakers_in_room)
-    
+
     for (wavs, timestamps) in gen:
         sampleNr += 1
         try:
@@ -215,7 +218,7 @@ def generate():
             speakerPos = pos[1:]
             speakerDir = dirs[1:]
 
-            earPos, earDirs = get_pos_mics(listener_pos, listener_dir)                   
+            earPos, earDirs = get_pos_mics(listener_pos, listener_dir)
 
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
                                     speakerDir, wavs, timestamps)
@@ -247,24 +250,24 @@ def generate():
 
             # creating data
             tracks = wavTools.makeTimeOffsets(timestamps)
-            
 
-            figs =[]
+            figs = []
             if env.visualize or env.exportFigures:
                 perf.start('creatingFigs')
                 figs.append(visual.plotTracks(tracks))
-                fig1,fig2 = visual.customPlot(pos, middle, dirs, baseAnlge, dims)
-                figs.extend([fig1,fig2])
+                fig1, fig2 = visual.customPlot(
+                    pos, middle, dirs, baseAnlge, dims)
+                figs.extend([fig1, fig2])
                 perf.end('creatingFigs')
             if(env.visualize):
                 for fig in figs:
                     plt.figure(fig)
                     plt.show()
-           
+
             if env.verbose > 0:
                 msg = f'Generated Room {sampleNr} / {env.target_amount_samples}.'
                 print(msg, end="\r", flush=True)
-                if sampleNr==env.target_amount_samples:
+                if sampleNr == env.target_amount_samples:
                     print(msg)
             perf.end('generate')
 
@@ -277,6 +280,7 @@ def generate():
 
     if(env.showPerformanceSummary):
         perf.showSummary()
+
 
 if __name__ == '__main__':
     generator = generate()

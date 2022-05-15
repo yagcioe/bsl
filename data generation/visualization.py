@@ -31,7 +31,7 @@ def plotDirectivities(base, middle, baseRefDirs, pos, posDirs, roomCorners):
         return [x[0]-y[0], x[1]-y[1]]
 
     arrowLen = 5
-    fig = plt.figure(dpi=300)
+    fig = plt.figure(dpi=env.figureDpi)
     plt.gca().set_aspect('equal', adjustable='box')
 
     a = roomCorners[0]
@@ -122,7 +122,7 @@ def customPlot(positions, middle, dirs, baseAngle, roomDims):
 
 
 def plotTracks(tracks):
-    fig = plt.figure(dpi=300)
+    fig = plt.figure(dpi=env.figureDpi)
     plt.xlabel("Zeit [s]")
     plt.ylabel("Sprecher")
     plt.yticks(ticks=range(len(tracks)))
