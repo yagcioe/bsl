@@ -253,7 +253,8 @@ def generate():
             if env.visualize or env.exportFigures:
                 perf.start('creatingFigs')
                 figs.append(visual.plotTracks(tracks))
-                figs.append(visual.customPlot(pos, middle, dirs, baseAnlge, dims))
+                fig1,fig2 = visual.customPlot(pos, middle, dirs, baseAnlge, dims)
+                figs.extend([fig1,fig2])
                 perf.end('creatingFigs')
             if(env.visualize):
                 for fig in figs:

@@ -59,6 +59,20 @@ def plotDirectivities(base, middle, baseRefDirs, pos, posDirs, roomCorners):
     return fig
 
 
+def pd(positions,dirs):
+    fig = plt.figure()
+    plt.gca().set_aspect('equal', adjustable='box')
+
+    for p in positions:
+        plt.scatter(p[0], p[1])
+    arrowLen = 5
+    for i in range(len(dirs)):
+        v = util.toVektor(dirs[i][0], arrowLen)
+        plt.arrow(positions[0][0], positions[0][1], v[0], v[1], color='#f559')
+    return fig
+   
+    
+
 def plot2dPoints(points):
     x = [points[i][0] for i in range(len(points))]
     y = [points[i][1] for i in range(len(points))]
@@ -88,6 +102,9 @@ def customPlot(positions, middle, dirs, baseAngle, roomDims):
     d = [roomDims[0], roomDims[1], 0]
     roomCorners = [a, b, c, d]
 
+    fig1 = plotDirectivities(positions[0], middle, dirs[0],
+                    positions[1:], dirs[1:], roomCorners)
+
     positions = [util.translate(p,positionsC[0]) for p in positions]
     middle = util.translate(middle,positionsC[0])
     roomCorners = [util.translate(c,positionsC[0]) for c in roomCorners]
@@ -101,7 +118,7 @@ def customPlot(positions, middle, dirs, baseAngle, roomDims):
     fig = plotDirectivities(positions[0], middle, dirs[0],
                       positions[1:], dirs[1:], roomCorners)
     plt.close(fig)
-    return fig
+    return fig1,fig
 
 
 def plotTracks(tracks):
