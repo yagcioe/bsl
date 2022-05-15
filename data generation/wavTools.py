@@ -6,6 +6,7 @@ from pyroomacoustics.directivities \
 import environment as env
 import math
 from dereverb import deReverb
+import performance as perf
 
 
 def loadWavFile(path, offset=0, duration=None):
@@ -111,6 +112,11 @@ def mixRoom(room: pra.ShoeBox, listenerEarPositions, listenerEarDirs, speakerPos
     room.add_microphone_array(mic_array)
 
     return room
+
+def simulate(room:pra.ShoeBox):
+    perf.start()
+    room.simulate()
+    perf.end()
 
 
 def exportRoom(room: pra.ShoeBox, filepath):

@@ -1,5 +1,6 @@
 import os
 import shutil
+from time import time
 import traceback
 from matplotlib import pyplot as plt
 import matplotlib
@@ -12,6 +13,7 @@ import environment as env
 import wavTools
 import util
 import visualization as visual
+import performance as perf
 
 env.overrideParams()
 
@@ -20,6 +22,7 @@ env.overrideParams()
 
 
 def generate_room_characteristics():
+    perf.start()
     dims = rt60 = 0
     if env.randomize_room:
         dims = [np.random.randint(env.room_dim_ranges[i][0], env.room_dim_ranges[i][1])
@@ -32,6 +35,7 @@ def generate_room_characteristics():
         dims = env.normal_room_dim
         rt60 = env.normal_rt60
 
+    perf.end()
     return dims, rt60
 
 
@@ -84,12 +88,14 @@ def random_persons_in_room(roomDims, count):
         return pos
 
     # do while: erzeuge solange bis gültiges ergebnis
+    perf.start()
     positions = pos_in_room(count)
     dirs, baseAngle, middle = transform_to_directivities(positions)
     while(positions_too_close(positions) or anlges_too_small(dirs)):
         positions = pos_in_room(count)
         dirs, baseAngle, middle = transform_to_directivities(positions)
 
+    perf.end()
     return positions, dirs, middle, baseAngle
 
 # calculates mic positions depentend of middle point
@@ -159,14 +165,17 @@ def createJsonData(sampleNr: int, speakerIdsList, listenerPos, listenerDir,
 
 
 def createFolder(targetFolder):
+    perf.start()
     try:
         os.mkdir(targetFolder)
     except Exception as e:
         shutil.rmtree(targetFolder)
         os.mkdir(targetFolder)
+    perf.end()
 
 
 def exportSample(sampleNr: int, roomWav, wavs, json_data: any, figs):
+    perf.start()
     folder = env.target_dir+'/'+str(sampleNr)
     createFolder(folder)
     # wavTools.exportRoom(room, folder+'/room.wav')
@@ -179,6 +188,7 @@ def exportSample(sampleNr: int, roomWav, wavs, json_data: any, figs):
         for i,fig in enumerate(figs):
             fig.savefig(folder+f'/figure{i}.jpg', bbox_inches="tight")
             plt.close(fig)
+    perf.end()
 
 
 """MAIN"""
@@ -186,13 +196,15 @@ def exportSample(sampleNr: int, roomWav, wavs, json_data: any, figs):
 
 def generate():
     sampleNr = env.skipSamples
+
     gen = VoiceLineGeneratorKEC(
         env.target_amount_samples, env.speakers_in_room)
+    
     for (wavs, timestamps) in gen:
         sampleNr += 1
         try:
             # creating parameters
-
+            perf.start('generate')
             dims, rt60 = generate_room_characteristics()
             room = wavTools.createRoom(dims, rt60)
 
@@ -207,7 +219,8 @@ def generate():
 
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
                                     speakerDir, wavs, timestamps)
-            room.simulate()
+
+            wavTools.simulate(room)
 
             allListenerPos = [listener_pos]
             allListenerPos.extend(earPos)
@@ -235,18 +248,25 @@ def generate():
             # creating data
             tracks = wavTools.makeTimeOffsets(timestamps)
             
+
             figs =[]
             if env.visualize or env.exportFigures:
+                perf.start('creatingFigs')
                 figs.append(visual.plotTracks(tracks))
                 figs.append(visual.customPlot(pos, middle, dirs, baseAnlge, dims))
+                perf.end('creatingFigs')
             if(env.visualize):
                 for fig in figs:
                     plt.figure(fig)
                     plt.show()
-
+           
             if env.verbose > 0:
-                msg = f'Generated Room Nr.{sampleNr}.'
-                print(msg)
+                msg = f'Generated Room {sampleNr} / {env.target_amount_samples}.'
+                print(msg, end="\r", flush=True)
+                if sampleNr==env.target_amount_samples:
+                    print(msg)
+            perf.end('generate')
+
             yield sampleNr, roomWav, wavs, json_data, figs
         except Exception as e:
             sampleNr -= 1
@@ -254,6 +274,8 @@ def generate():
                 print('error ' + str(e))
                 traceback.print_exc()
 
+    if(env.showPerformanceSummary):
+        perf.showSummary()
 
 if __name__ == '__main__':
     generator = generate()

@@ -7,6 +7,7 @@ target_dir = '/workspace/training/KEC'
 visualize = True
 exportFigures = False
 verbose = 1
+showPerformanceSummary=False
 prevent_SameRecordingInSampleTwice = False
 
 "Persons"

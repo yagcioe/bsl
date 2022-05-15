@@ -4,6 +4,7 @@ import os
 import textgrid
 from timestamp import SentenceWithTimestamp
 import environment as env
+import performance as perf
 from wavTools import loadWavFile
 
 
@@ -41,6 +42,7 @@ def matchingWavFile(txtName, allWavsNames):
 
 
 def FileGeneratorsKEC():
+    perf.start()
     src = '/workspace/data/KEC'
     recFolders = list(filter(lambda f: rec_filter(f), os.listdir(src)))
     allWavfiles = []
@@ -69,7 +71,7 @@ def FileGeneratorsKEC():
         txtFilesOfFolder = list(
             map(lambda f: currentDir+"/"+f, txtFilesOfFolder))
         alltxtFiles.extend(txtFilesOfFolder)
-
+    perf.end()
     return allWavTxtTupels
 
 
@@ -107,6 +109,7 @@ def VoiceLineGeneratorKEC(count, voicesPerSample):
 
     tupelList = FileGeneratorsKEC()
     for i in range(count):
+        perf.start('KecYield')
         w = []
         t = []
         usedRec = []
@@ -138,5 +141,7 @@ def VoiceLineGeneratorKEC(count, voicesPerSample):
 
             t.append(ts)
             w.append(wav)
+        perf.end('KecYield')
+
         yield w, t
     return
