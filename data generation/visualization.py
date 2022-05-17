@@ -1,4 +1,5 @@
 
+from turtle import color
 import matplotlib.pyplot as plt
 import environment as env
 
@@ -60,6 +61,7 @@ def plotDirectivities(base, middle, baseRefDirs, pos, posDirs, roomCorners):
 
 
 def pd(positions,dirs):
+    c= ['g','b','c','r','m','y']
     fig = plt.figure()
     plt.gca().set_aspect('equal', adjustable='box')
 
@@ -68,7 +70,8 @@ def pd(positions,dirs):
     arrowLen = 5
     for i in range(len(dirs)):
         v = util.toVektor(dirs[i][0], arrowLen)
-        plt.arrow(positions[0][0], positions[0][1], v[0], v[1], color='#f559')
+        #  c= '#f559' if i != 0 else '#55ff55'
+        plt.arrow(positions[0][0], positions[0][1], v[0], v[1],color = c[i%len(c)])
     return fig
    
     

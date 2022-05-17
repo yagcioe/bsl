@@ -16,7 +16,7 @@ prevent_SameRecordingInSampleTwice = False
 # size of the Listeners head diameter
 head_size = 0.2
 
-speakers_in_room = 2
+speakers_in_room = 2 # do not change
 maxSpeakerAtOnce = 2
 speaker_in_room_ranges = [1, 2]
 randomize_speaker_count = False

@@ -1,3 +1,4 @@
+from cmath import log
 import math
 import numpy as np
 
@@ -49,9 +50,23 @@ def translate(point, translation):
     return trans
 
 
-def boundAngle(angle):
-    while(angle < -math.pi):
-        angle += math.pi
-    while(angle > math.pi):
-        angle = angle-math.pi
+def boundAngle(angle, twoPi=False):
+    bound = 2*math.pi if twoPi else math.pi
+    while(angle < bound-2*math.pi):
+        angle += 2*math.pi
+    while(angle > bound):
+        angle = angle-2*math.pi
     return angle
+
+def azimuth(angle):
+    print(str(type(angle[0])).lower())
+    if str(type(angle[0])).lower() == "<class 'list'>":
+        print(True)
+        return [a[0] for a in angle]
+    return angle[0]
+
+
+def join(a, b):
+    c = a.copy()
+    c.extend(b)
+    return c

@@ -1,4 +1,5 @@
 import os
+import random
 import shutil
 from time import time
 import traceback
@@ -65,21 +66,60 @@ def anlges_too_small(dirs):
 
 
 def transform_to_directivities(positions):
+    print('startTrans')
     listenerPos = positions[0]
     speakerPos = positions[1:]
 
+    speakerDirs = [[util.toAngle(listenerPos, pos), math.pi/2]
+                   for pos in speakerPos]
+    print('speakers:')
+    print(speakerDirs)
+    print(util.azimuth(speakerDirs))
+    miin = min(util.azimuth(speakerDirs))
+    maax = max(util.azimuth(speakerDirs))
+
+    diff = maax-miin
+    newMin = miin
+    flip = False
+    print(f'{miin}, {maax}')
+    if(diff > math.pi):
+        print('flip')
+        print(f'{miin}, {maax}')
+
+        miin = util.boundAngle(min(util.azimuth(speakerDirs)),True)
+        maax = util.boundAngle(max(util.azimuth(speakerDirs)),True)
+        newMin = miin + 2 * math.pi
+
+    dirToAdd = newMin if not flip else maax
+    dirToReach = maax if not flip else newMin
+    epsilon = 10**-6
+    if(dirToAdd+diff - dirToReach > epsilon):
+        print('still wrong')
+
+    a = util.avg(util.azimuth(speakerDirs))
+    mdir = [a, math.pi/2]
+
+    upper= dirToAdd + 90 # ear angle
+    lower = dirToReach-90
+    s2 = [util.boundAngle(s[0],True) for s in speakerDirs]
+    print(f'upper:{upper},lower:{lower}. speakers:{s2}')
+    listenerDir = [random.uniform(lower,upper), math.pi/2]
+    
+    
+    l= [miin+0.1,math.pi/2]
+    u = [maax+0.1,math.pi/2]
+    fig = visual.pd(positions, util.join([listenerDir,l,u], speakerDirs))
+    plt.figure(fig)
+    plt.show()
     middle = [util.avg(np.transpose(speakerPos)[i])
               for i in range(len(speakerPos[0]))]
-
-    # Winkel aus Vogelperspeltive, in die Listnener guckt
     baseAngle = util.toAngle(listenerPos[:2], middle[:2])
 
     listenerDir = [baseAngle, math.pi/2]
-    speakerDirs = [[util.toAngle(listenerPos, pos), math.pi/2]
-                   for pos in speakerPos]
-
     dirs = [listenerDir]
     dirs.extend(speakerDirs)
+    print('endTrans')
+
     return dirs, baseAngle, middle
 
 
@@ -223,7 +263,7 @@ def generate():
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
                                     speakerDir, wavs, timestamps)
 
-            wavTools.simulate(room)
+            # wavTools.simulate(room)
 
             allListenerPos = [listener_pos]
             allListenerPos.extend(earPos)
@@ -246,7 +286,7 @@ def generate():
 
             json_data = createJsonData(sampleNr, range(
                 len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
-            roomWav = np.swapaxes(room.mic_array.signals, 0, 1)
+            roomWav = []  # np.swapaxes(room.mic_array.signals, 0, 1)
 
             # creating data
             tracks = wavTools.makeTimeOffsets(timestamps)
@@ -254,10 +294,10 @@ def generate():
             figs = []
             if env.visualize or env.exportFigures:
                 perf.start('creatingFigs')
-                figs.append(visual.plotTracks(tracks))
+                # figs.append(visual.plotTracks(tracks))
                 fig1, fig2 = visual.customPlot(
                     pos, middle, dirs, baseAnlge, dims)
-                figs.extend([fig1, fig2])
+                #figs.extend([fig1, fig2])
                 perf.end('creatingFigs')
             if(env.visualize):
                 for fig in figs:
