@@ -6,9 +6,9 @@ skipSamples = 0
 target_dir = '/workspace/training/KEC'
 visualize = True
 exportFigures = False
-figureDpi=300
+figureDpi = 300
 verbose = 1
-showPerformanceSummary=False
+showPerformanceSummary = False
 prevent_SameRecordingInSampleTwice = False
 
 
@@ -16,16 +16,18 @@ prevent_SameRecordingInSampleTwice = False
 # size of the Listeners head diameter
 head_size = 0.2
 
-speakers_in_room = 2 # do not change
+speakers_in_room = 2  # do not change
 maxSpeakerAtOnce = 2
 speaker_in_room_ranges = [1, 2]
 randomize_speaker_count = False
 
-#minimum_time_offset = 0.1 #sec
-max_speach_overlap = 1 #sec
+# minimum_time_offset = 0.1 #sec
+max_speach_overlap = 1  # sec
 maxTimeDistanceBetweenSpeakers = 0.7  # sec
 
-min_angle = math.pi/18 # min angle between speakers in relation to listener
+min_angle = math.pi/18  # min angle between speakers in relation to listener
+max_angle = math.pi*(16/18)
+
 "ROOM"
 
 
@@ -50,4 +52,3 @@ padding = 1  # sec
 
 # 'nice to have' for data generation
 source_dataset = 'KEC - https://clarin.phonetik.uni-muenchen.de/BASRepository/index.php?target=Public/Corpora/KEC/KEC.1.php'
-

@@ -61,7 +61,7 @@ def plotDirectivities(base, middle, baseRefDirs, pos, posDirs, roomCorners):
 
 
 def pd(positions,dirs):
-    c= ['g','b','c','r','m','y']
+    c= ['g','b','c','r','m','y','k']
     fig = plt.figure()
     plt.gca().set_aspect('equal', adjustable='box')
 

@@ -59,9 +59,7 @@ def boundAngle(angle, twoPi=False):
     return angle
 
 def azimuth(angle):
-    print(str(type(angle[0])).lower())
-    if str(type(angle[0])).lower() == "<class 'list'>":
-        print(True)
+    if str(type(angle[0])).lower() == "<class 'list'>": # weird but works in python 3.9 and python 3.10
         return [a[0] for a in angle]
     return angle[0]
 
@@ -70,3 +68,6 @@ def join(a, b):
     c = a.copy()
     c.extend(b)
     return c
+
+def addColat(angle):
+    return [angle,math.pi/2]

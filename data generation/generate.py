@@ -60,67 +60,68 @@ def positions_too_close(positions):
 def anlges_too_small(dirs):
     for i in range(len(dirs)):
         for j in range(i+1, len(dirs)):
-            if(abs(dirs[i][0]-dirs[j][0]) < env.min_angle):
+            diff = abs(dirs[i][0]-dirs[j][0])
+            if diff > math.pi:
+                diff = math.pi*2-diff
+            if(diff < env.min_angle):
+                return True
+    return False
+
+
+def angles_too_big(dirs):
+    for i in range(len(dirs)):
+        for j in range(i+1, len(dirs)):
+            diff = abs(dirs[i][0]-dirs[j][0])
+            if diff > math.pi:
+                diff = math.pi*2-diff
+            if(diff > env.max_angle):
                 return True
     return False
 
 
 def transform_to_directivities(positions):
-    print('startTrans')
     listenerPos = positions[0]
     speakerPos = positions[1:]
 
     speakerDirs = [[util.toAngle(listenerPos, pos), math.pi/2]
                    for pos in speakerPos]
-    print('speakers:')
-    print(speakerDirs)
-    print(util.azimuth(speakerDirs))
+
     miin = min(util.azimuth(speakerDirs))
     maax = max(util.azimuth(speakerDirs))
-
     diff = maax-miin
-    newMin = miin
-    flip = False
-    print(f'{miin}, {maax}')
     if(diff > math.pi):
-        print('flip')
-        print(f'{miin}, {maax}')
+        t = maax
+        maax = miin+2*math.pi
+        miin = t
+        diff = maax-miin
 
-        miin = util.boundAngle(min(util.azimuth(speakerDirs)),True)
-        maax = util.boundAngle(max(util.azimuth(speakerDirs)),True)
-        newMin = miin + 2 * math.pi
-
-    dirToAdd = newMin if not flip else maax
-    dirToReach = maax if not flip else newMin
+    # sanity checks
+    dirToAdd = min(miin, maax)
+    dirToReach = max(miin, maax)
     epsilon = 10**-6
     if(dirToAdd+diff - dirToReach > epsilon):
-        print('still wrong')
+        raise 'idk what happend'
 
-    a = util.avg(util.azimuth(speakerDirs))
-    mdir = [a, math.pi/2]
+    upper = dirToAdd + math.pi/2  # ear angle
+    lower = dirToReach-math.pi/2
+    baseAngle = random.uniform(lower, upper)
+    listenerDir = util.addColat(util.boundAngle(baseAngle))
+    # normed = (baseAngle-lower) / (upper-lower)
+    # print(f'r:{normed}')
+    # s2 = [util.boundAngle(s[0], True) for s in speakerDirs]
+    # print(f'upper:{upper},lower:{lower}. speakers:{s2}')
+    # # listenerDir = [middle, math.pi/2]
 
-    upper= dirToAdd + 90 # ear angle
-    lower = dirToReach-90
-    s2 = [util.boundAngle(s[0],True) for s in speakerDirs]
-    print(f'upper:{upper},lower:{lower}. speakers:{s2}')
-    listenerDir = [random.uniform(lower,upper), math.pi/2]
-    
-    
-    l= [miin+0.1,math.pi/2]
-    u = [maax+0.1,math.pi/2]
-    fig = visual.pd(positions, util.join([listenerDir,l,u], speakerDirs))
-    plt.figure(fig)
-    plt.show()
-    middle = [util.avg(np.transpose(speakerPos)[i])
-              for i in range(len(speakerPos[0]))]
-    baseAngle = util.toAngle(listenerPos[:2], middle[:2])
+    # fig = visual.pd(positions, util.join([listenerDir, util.addColat(
+    #     lower-0.02), util.addColat(lower), util.addColat(upper+0.02), util.addColat(upper)], speakerDirs))
+    # plt.figure(fig)
+    # plt.show()
 
-    listenerDir = [baseAngle, math.pi/2]
-    dirs = [listenerDir]
-    dirs.extend(speakerDirs)
-    print('endTrans')
+    middle = util.toVektor(baseAngle, 2)
+    middle = [-m for m in middle]
+    middle = util.translate(listenerPos, middle)
 
-    return dirs, baseAngle, middle
+    return listenerDir, speakerDirs, baseAngle, middle
 
 
 def random_persons_in_room(roomDims, count):
@@ -133,13 +134,15 @@ def random_persons_in_room(roomDims, count):
     # do while: erzeuge solange bis gültiges ergebnis
     perf.start()
     positions = pos_in_room(count)
-    dirs, baseAngle, middle = transform_to_directivities(positions)
-    while(positions_too_close(positions) or anlges_too_small(dirs)):
+    listenerDir, speakerDirs, baseAngle, middle = transform_to_directivities(
+        positions)
+    while(positions_too_close(positions) or anlges_too_small(speakerDirs) or angles_too_big(speakerDirs)):
         positions = pos_in_room(count)
-        dirs, baseAngle, middle = transform_to_directivities(positions)
+        listenerDir, speakerDirs, baseAngle, middle = transform_to_directivities(
+            positions)
 
     perf.end()
-    return positions, dirs, middle, baseAngle
+    return positions, util.join([listenerDir], speakerDirs), middle, baseAngle
 
 # calculates mic positions depentend of middle point
 
@@ -221,7 +224,6 @@ def exportSample(sampleNr: int, roomWav, wavs, json_data: any, figs):
     perf.start()
     folder = env.target_dir+'/'+str(sampleNr)
     createFolder(folder)
-    # wavTools.exportRoom(room, folder+'/room.wav')
     soundfile.write(folder+'/room.wav', roomWav, env.sampleRate)
     for i in range(len(wavs)):
         soundfile.write(folder+f'/speaker{i}.wav', wavs[i], env.sampleRate)
@@ -263,7 +265,7 @@ def generate():
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
                                     speakerDir, wavs, timestamps)
 
-            # wavTools.simulate(room)
+            wavTools.simulate(room)
 
             allListenerPos = [listener_pos]
             allListenerPos.extend(earPos)
@@ -286,7 +288,7 @@ def generate():
 
             json_data = createJsonData(sampleNr, range(
                 len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
-            roomWav = []  # np.swapaxes(room.mic_array.signals, 0, 1)
+            roomWav = np.swapaxes(room.mic_array.signals, 0, 1)
 
             # creating data
             tracks = wavTools.makeTimeOffsets(timestamps)
@@ -294,10 +296,10 @@ def generate():
             figs = []
             if env.visualize or env.exportFigures:
                 perf.start('creatingFigs')
-                # figs.append(visual.plotTracks(tracks))
+                figs.append(visual.plotTracks(tracks))
                 fig1, fig2 = visual.customPlot(
                     pos, middle, dirs, baseAnlge, dims)
-                #figs.extend([fig1, fig2])
+                figs.extend([fig2])
                 perf.end('creatingFigs')
             if(env.visualize):
                 for fig in figs:
