@@ -24,6 +24,7 @@ randomize_speaker_count = False
 # minimum_time_offset = 0.1 #sec
 max_speach_overlap = 2  # sec
 maxTimeDistanceBetweenSpeakers = 0.7  # sec
+maxSpeakerDuration = 5 # sec
 
 min_angle = math.pi/18  # min angle between speakers in relation to listener
 max_angle = math.pi*(16/18)

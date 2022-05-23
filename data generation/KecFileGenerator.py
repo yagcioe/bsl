@@ -40,7 +40,6 @@ def matchingWavFile(txtName, allWavsNames):
     return None
 
 
-
 def FileGeneratorsKEC():
     perf.start()
     src = '/workspace/data/KEC'
@@ -86,10 +85,10 @@ def split_sentence(textGrid: textgrid.textgrid.TextGrid):
     for word in words:
         if len(sentence) == 0:
             startTime = word.minTime
-        if('\\u' in word.mark):
-            print('hierfehltderUmlat')
-        # if found break wich is longer than 1 sec
-        if re.search(specialWordsRegex, word.mark) != None and (word.maxTime-word.minTime) > maxSentencePause:
+
+        #Satzende / pause erreicht
+        if (re.search(specialWordsRegex, word.mark) != None and (word.maxTime-word.minTime) > maxSentencePause) \
+                or word.maxTime-startTime > env.maxSpeakerDuration: # oder maximale satzdauer erreicht
             if len(sentence) >= env.min_words_per_sentence:
                 sentences.append(SentenceWithTimestamp(
                     sentence, startTime, word.minTime))
@@ -123,7 +122,8 @@ def VoiceLineGeneratorKEC(count, voicesPerSample):
                 randomText, randomWav = tupelList[random_file]
 
                 while env.prevent_SameRecordingInSampleTwice and getRec(randomText) in usedRec:
-                    print(f'tried to use same recoring twice: {randomText}: {usedRec}')
+                    print(
+                        f'tried to use same recoring twice: {randomText}: {usedRec}')
                     random_file = np.random.randint(0, len(tupelList))
                     randomText, randomWav = tupelList[random_file]
                 sentences = split_sentence(
