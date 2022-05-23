@@ -106,16 +106,6 @@ def transform_to_directivities(positions):
     lower = dirToReach-math.pi/2
     baseAngle = random.uniform(lower, upper)
     listenerDir = util.addColat(util.boundAngle(baseAngle))
-    # normed = (baseAngle-lower) / (upper-lower)
-    # print(f'r:{normed}')
-    # s2 = [util.boundAngle(s[0], True) for s in speakerDirs]
-    # print(f'upper:{upper},lower:{lower}. speakers:{s2}')
-    # # listenerDir = [middle, math.pi/2]
-
-    # fig = visual.pd(positions, util.join([listenerDir, util.addColat(
-    #     lower-0.02), util.addColat(lower), util.addColat(upper+0.02), util.addColat(upper)], speakerDirs))
-    # plt.figure(fig)
-    # plt.show()
 
     middle = util.toVektor(baseAngle, 2)
     middle = [-m for m in middle]
@@ -150,17 +140,10 @@ def random_persons_in_room(roomDims, count):
 def get_pos_mics(position, dir):
     dirLeft = [util.boundAngle(dir[0]+math.pi/2), dir[1]]
     dirRight = [util.boundAngle(dir[0] - math.pi/2), dir[1]]
-    posLeft = point_pos(position, env.head_size/2, dirLeft[0])
-    posRight = point_pos(position, env.head_size/2, dirRight[0])
+    posLeft = util.translateAngle(position, env.head_size/2, dirLeft[0])
+    posRight = util.translateAngle(position, env.head_size/2, dirRight[0])
 
     return [posLeft, posRight], [dirLeft, dirRight]
-
-# calculates mic position depentend of middle point
-
-
-def point_pos(x, d, theta):
-    theta_rad = math.pi/2 - theta
-    return [x[0] + d * math.cos(theta_rad), x[1] + d*math.sin(theta_rad), x[2]]
 
 
 """Exporting training data"""
@@ -262,44 +245,45 @@ def generate():
 
             earPos, earDirs = get_pos_mics(listener_pos, listener_dir)
 
+            tracks = wavTools.makeTimeOffsets(timestamps)
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
                                     speakerDir, wavs, timestamps)
 
             wavTools.simulate(room)
+            
+            normedearPos = util.normalizeAllPoints(
+                earPos, listener_pos, baseAnlge)
+            
+
+            speakerPos = util.normalizeAllPoints(
+                speakerPos, listener_pos, baseAnlge)
+            speakerDir = util.normalizeAllAngles(speakerDir, baseAnlge)
+
+            normedEarDirs = util.normalizeAllAngles(earDirs, baseAnlge)
+
+            listener_pos = util.normalizePoint(
+                listener_pos, listener_pos, baseAnlge)
+            listener_dir = util.normalizeAngle(listener_dir, baseAnlge)
 
             allListenerPos = [listener_pos]
-            allListenerPos.extend(earPos)
+            allListenerPos.extend(normedearPos)
 
             allListenerDirs = [listener_dir]
-            allListenerDirs.extend(earDirs)
-
-            # correct agnles offset
-            allListenerPos = [util.rotateAroundPoint(v, listener_pos, -baseAnlge)
-                              for v in allListenerPos]
-            speakerPos = [util.rotateAroundPoint(v, listener_pos, -baseAnlge)
-                          for v in speakerPos]
-            allListenerPos = [util.translate(
-                p, listener_pos) for p in allListenerPos]
-            speakerPos = [util.translate(p, listener_pos) for p in speakerPos]
-            allListenerDirs = [
-                [util.boundAngle(d[0]-baseAnlge), d[1]] for d in allListenerDirs]
-            speakerDir = [[util.boundAngle(d[0]-baseAnlge), d[1]]
-                          for d in speakerDir]
+            allListenerDirs.extend(normedEarDirs)
 
             json_data = createJsonData(sampleNr, range(
                 len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
             roomWav = np.swapaxes(room.mic_array.signals, 0, 1)
 
             # creating data
-            tracks = wavTools.makeTimeOffsets(timestamps)
 
             figs = []
             if env.visualize or env.exportFigures:
                 perf.start('creatingFigs')
                 figs.append(visual.plotTracks(tracks))
                 fig1, fig2 = visual.customPlot(
-                    pos, middle, dirs, baseAnlge, dims)
-                figs.extend([fig2])
+                    util.join(pos, earPos), middle, util.join(dirs, earDirs), baseAnlge, dims)
+                figs.extend([fig1,fig2])
                 perf.end('creatingFigs')
             if(env.visualize):
                 for fig in figs:

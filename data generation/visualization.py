@@ -55,7 +55,10 @@ def plotDirectivities(base, middle, baseRefDirs, pos, posDirs, roomCorners):
     for i in range(len(posDirs)):
         v = util.toVektor(posDirs[i][0], arrowLen)
         plt.arrow(base[0], base[1], v[0], v[1], color='#f559')
+    
+    for i in range(len(pos)):
         plt.scatter(pos[i][0], pos[i][1], c='#f559')
+
     plt.close()
     return fig
 
@@ -108,16 +111,11 @@ def customPlot(positions, middle, dirs, baseAngle, roomDims):
     fig1 = plotDirectivities(positions[0], middle, dirs[0],
                     positions[1:], dirs[1:], roomCorners)
 
-    positions = [util.translate(p,positionsC[0]) for p in positions]
-    middle = util.translate(middle,positionsC[0])
-    roomCorners = [util.translate(c,positionsC[0]) for c in roomCorners]
+    positions = util.normalizeAllPoints(positions,positionsC[0],baseAngle)
+    roomCorners = util.normalizeAllPoints(roomCorners,positionsC[0],baseAngle)
+    middle = util.normalizePoint(middle,positionsC[0],baseAngle)
 
-    positions = [util.rotateAroundPoint(v, positions[0], -baseAngle)
-                 for v in positions]
-    roomCorners = [util.rotateAroundPoint(v, positions[0], -baseAngle)
-                   for v in roomCorners]
-    middle = util.rotateAroundPoint(middle,positions[0],-baseAngle)
-    dirs = [[d[0]-baseAngle, d[1]] for d in dirs]
+    dirs = util.normalizeAllAngles(dirs,baseAngle)
     fig = plotDirectivities(positions[0], middle, dirs[0],
                       positions[1:], dirs[1:], roomCorners)
     plt.close(fig)

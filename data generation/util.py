@@ -43,12 +43,16 @@ def rotateAroundPoint(v, base, angle):
     return x
 
 
-def translate(point, translation):
-    trans = [point[i]-translation[i] for i in range(2)]
+def translate(point, translation, positve=False):
+    trans =  [point[i]+translation[i] for i in range(2)]if positve else [point[i]-translation[i] for i in range(2)]
     if len(point) == 3:
         trans.append(point[2])
     return trans
 
+def translateAngle(x, d, theta):
+    v = toVektor(theta,d)
+    v.append(0)
+    return translate(x,v,True)
 
 def boundAngle(angle, twoPi=False):
     bound = 2*math.pi if twoPi else math.pi
@@ -59,15 +63,36 @@ def boundAngle(angle, twoPi=False):
     return angle
 
 def azimuth(angle):
-    if str(type(angle[0])).lower() == "<class 'list'>": # weird but works in python 3.9 and python 3.10
+    # weird but works in python 3.9 and python 3.10
+    if str(type(angle[0])).lower() == "<class 'list'>":
         return [a[0] for a in angle]
     return angle[0]
 
 
 def join(a, b):
-    c = a.copy()
+    c = []
+    c.extend(a)
     c.extend(b)
     return c
 
+
 def addColat(angle):
-    return [angle,math.pi/2]
+    return [angle, math.pi/2]
+
+
+def normalizePoint(p, trans, angle):
+    v = rotateAroundPoint(p, trans, -angle)
+    v = translate(v, trans)
+    return v
+
+
+def normalizeAllPoints(list, trans, angle):
+    return [normalizePoint(p, trans, angle) for p in list]
+
+
+def normalizeAngle(angle, baseAngle):
+    return [boundAngle(angle[0]-baseAngle), angle[1]]
+
+
+def normalizeAllAngles(list, baseAngle):
+    return [normalizeAngle(angle, baseAngle) for angle in list]
