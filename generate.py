@@ -248,7 +248,9 @@ def generate():
             tracks = wavTools.makeTimeOffsets(timestamps)
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
                                     speakerDir, wavs, timestamps)
-            fig3 , ax = room.plot()
+            if(env.visualize or env.exportFigures):                                    
+                fig3 , ax = room.plot()
+                plt.close(fig3)
             wavTools.simulate(room)
             
             normedearPos = util.normalizeAllPoints(
