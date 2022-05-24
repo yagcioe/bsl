@@ -248,7 +248,7 @@ def generate():
             tracks = wavTools.makeTimeOffsets(timestamps)
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
                                     speakerDir, wavs, timestamps)
-
+            fig3 , ax = room.plot()
             wavTools.simulate(room)
             
             normedearPos = util.normalizeAllPoints(
@@ -281,9 +281,10 @@ def generate():
             if env.visualize or env.exportFigures:
                 perf.start('creatingFigs')
                 figs.append(visual.plotTracks(tracks))
+               
                 fig1, fig2 = visual.customPlot(
                     util.join(pos, earPos), middle, util.join(dirs, earDirs), baseAnlge, dims)
-                figs.extend([fig1,fig2])
+                figs.extend([fig3,fig2])
                 perf.end('creatingFigs')
             if(env.visualize):
                 for fig in figs:
