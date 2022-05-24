@@ -1,5 +1,4 @@
 
-from turtle import color
 import matplotlib.pyplot as plt
 import environment as env
 
