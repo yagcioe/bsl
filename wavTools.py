@@ -121,3 +121,6 @@ def simulate(room:pra.ShoeBox):
 
 def exportRoom(room: pra.ShoeBox, filepath):
     room.mic_array.to_wav(filepath, norm=True, bitdepth=np.float32)
+
+def duration(wav):
+    librosa.samples_to_time(len(wav)-1,sr=env.sampleRate)

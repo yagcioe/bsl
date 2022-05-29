@@ -149,7 +149,7 @@ def get_pos_mics(position, dir):
 """Exporting training data"""
 
 
-def createJsonData(sampleNr: int, speakerIdsList, listenerPos, listenerDir,
+def createJsonData(sampleNr: int, duration, speakerIdsList, listenerPos, listenerDir,
                    speakrePositionList, speakerDirections, timestamps, words=None):
     speakers = []
     for i in range(len(speakerIdsList)):
@@ -170,6 +170,7 @@ def createJsonData(sampleNr: int, speakerIdsList, listenerPos, listenerDir,
     return {
         'sample': {
             'id': sampleNr,
+            'duration': duration,
             'speakers': speakers,
             'listener': {
                 'position': listenerPos[0],
@@ -248,14 +249,10 @@ def generate():
             tracks = wavTools.makeTimeOffsets(timestamps)
             room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
                                     speakerDir, wavs, timestamps)
-            if(env.visualize or env.exportFigures):                                    
-                fig3 , ax = room.plot()
-                plt.close(fig3)
             wavTools.simulate(room)
-            
+
             normedearPos = util.normalizeAllPoints(
                 earPos, listener_pos, baseAnlge)
-            
 
             speakerPos = util.normalizeAllPoints(
                 speakerPos, listener_pos, baseAnlge)
@@ -273,20 +270,21 @@ def generate():
             allListenerDirs = [listener_dir]
             allListenerDirs.extend(normedEarDirs)
 
-            json_data = createJsonData(sampleNr, range(
-                len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
             roomWav = np.swapaxes(room.mic_array.signals, 0, 1)
+            duration = wavTools.duration(roomWav)
 
             # creating data
+            json_data = createJsonData(sampleNr, duration, range(
+                len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
 
             figs = []
             if env.visualize or env.exportFigures:
                 perf.start('creatingFigs')
                 figs.append(visual.plotTracks(tracks))
-               
+
                 fig1, fig2 = visual.customPlot(
                     util.join(pos, earPos), middle, util.join(dirs, earDirs), baseAnlge, dims)
-                figs.extend([fig3,fig2])
+                figs.extend([fig2])
                 perf.end('creatingFigs')
             if(env.visualize):
                 for fig in figs:
