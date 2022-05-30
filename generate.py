@@ -1,20 +1,19 @@
 import os
 import random
 import shutil
-from time import time
 import traceback
 from matplotlib import pyplot as plt
-import matplotlib
 import numpy as np
 import math
 import soundfile
 import json
-from KecFileGenerator import VoiceLineGeneratorKEC
-import environment as env
-import wavTools
-import util
-import visualization as visual
-import performance as perf
+
+import roomgen.environment as env
+from roomgen.KecFileGenerator import VoiceLineGeneratorKEC
+import roomgen.wavTools as wavTools
+import roomgen.util as util
+import roomgen.visualization as visual
+import roomgen.performance as perf
 
 env.overrideParams()
 
@@ -208,7 +207,7 @@ def exportSample(sampleNr: int, roomWav, wavs, json_data: any, figs):
     perf.start()
     folder = env.target_dir+'/'+str(sampleNr)
     createFolder(folder)
-    soundfile.write(folder+'/room.wav', roomWav, env.sampleRate)
+    soundfile.write(folder+'/room.wav', np.swapaxes(roomWav,0,1), env.sampleRate)
     for i in range(len(wavs)):
         soundfile.write(folder+f'/speaker{i}.wav', wavs[i], env.sampleRate)
     with open(folder+'/description.json', 'w', encoding='utf8') as file:
@@ -223,78 +222,25 @@ def exportSample(sampleNr: int, roomWav, wavs, json_data: any, figs):
 """MAIN"""
 
 
-def generate():
-    sampleNr = env.skipSamples
-
-    gen = VoiceLineGeneratorKEC(
-        env.target_amount_samples, env.speakers_in_room)
+def generate(amount=env.target_amount_samples, sampleNr= env.skipSamples):
+    gen = VoiceLineGeneratorKEC(amount, env.speakers_in_room)
 
     for (wavs, timestamps) in gen:
         sampleNr += 1
         try:
             # creating parameters
             perf.start('generate')
-            dims, rt60 = generate_room_characteristics()
-            room = wavTools.createRoom(dims, rt60)
-
-            pos, dirs, middle, baseAnlge = random_persons_in_room(
-                dims, env.speakers_in_room+1)
-            listener_pos = pos[0]
-            listener_dir = dirs[0]
-            speakerPos = pos[1:]
-            speakerDir = dirs[1:]
-
-            earPos, earDirs = get_pos_mics(listener_pos, listener_dir)
-
-            tracks = wavTools.makeTimeOffsets(timestamps)
-            room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
-                                    speakerDir, wavs, timestamps)
-            wavTools.simulate(room)
-
-            normedearPos = util.normalizeAllPoints(
-                earPos, listener_pos, baseAnlge)
-
-            speakerPos = util.normalizeAllPoints(
-                speakerPos, listener_pos, baseAnlge)
-            speakerDir = util.normalizeAllAngles(speakerDir, baseAnlge)
-
-            normedEarDirs = util.normalizeAllAngles(earDirs, baseAnlge)
-
-            listener_pos = util.normalizePoint(
-                listener_pos, listener_pos, baseAnlge)
-            listener_dir = util.normalizeAngle(listener_dir, baseAnlge)
-
-            allListenerPos = [listener_pos]
-            allListenerPos.extend(normedearPos)
-
-            allListenerDirs = [listener_dir]
-            allListenerDirs.extend(normedEarDirs)
-
-            roomWav = np.swapaxes(room.mic_array.signals, 0, 1)
-            duration = wavTools.duration(roomWav)
-
-            # creating data
-            json_data = createJsonData(sampleNr, duration, range(
-                len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
-
-            figs = []
-            if env.visualize or env.exportFigures:
-                perf.start('creatingFigs')
-                figs.append(visual.plotTracks(tracks))
-
-                fig1, fig2 = visual.customPlot(
-                    util.join(pos, earPos), middle, util.join(dirs, earDirs), baseAnlge, dims)
-                figs.extend([fig2])
-                perf.end('creatingFigs')
+            roomWav, json_data, figs = _calculateSample(
+                wavs, timestamps, sampleNr)
             if(env.visualize):
                 for fig in figs:
                     plt.figure(fig)
                     plt.show()
 
             if env.verbose > 0:
-                msg = f'Generated Room {sampleNr} / {env.target_amount_samples}.'
+                msg = f'Generated Room {sampleNr} / {amount}.'
                 print(msg, end="\r", flush=True)
-                if sampleNr == env.target_amount_samples:
+                if sampleNr == amount:
                     print(msg)
             perf.end('generate')
 
@@ -307,6 +253,63 @@ def generate():
 
     if(env.showPerformanceSummary):
         perf.showSummary()
+
+
+def _calculateSample(wavs, timestamps, sampleNr):
+    # creating parameters
+    dims, rt60 = generate_room_characteristics()
+    room = wavTools.createRoom(dims, rt60)
+
+    pos, dirs, middle, baseAnlge = random_persons_in_room(
+        dims, env.speakers_in_room+1)
+    listener_pos = pos[0]
+    listener_dir = dirs[0]
+    speakerPos = pos[1:]
+    speakerDir = dirs[1:]
+
+    earPos, earDirs = get_pos_mics(listener_pos, listener_dir)
+
+    tracks = wavTools.makeTimeOffsets(timestamps)
+    room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
+                            speakerDir, wavs, timestamps)
+    wavTools.simulate(room)
+
+    normedearPos = util.normalizeAllPoints(
+        earPos, listener_pos, baseAnlge)
+
+    speakerPos = util.normalizeAllPoints(
+        speakerPos, listener_pos, baseAnlge)
+    speakerDir = util.normalizeAllAngles(speakerDir, baseAnlge)
+
+    normedEarDirs = util.normalizeAllAngles(earDirs, baseAnlge)
+
+    listener_pos = util.normalizePoint(
+        listener_pos, listener_pos, baseAnlge)
+    listener_dir = util.normalizeAngle(listener_dir, baseAnlge)
+
+    allListenerPos = [listener_pos]
+    allListenerPos.extend(normedearPos)
+
+    allListenerDirs = [listener_dir]
+    allListenerDirs.extend(normedEarDirs)
+
+    roomWav = room.mic_array.signals
+    duration = wavTools.duration(roomWav[0])
+
+    # creating data
+    json_data = createJsonData(sampleNr, duration, range(
+        len(wavs)), allListenerPos, allListenerDirs, speakerPos, speakerDir, timestamps)
+
+    figs = []
+    if env.visualize or env.exportFigures:
+        figs.append(visual.plotTracks(tracks))
+
+        fig1, fig2 = visual.customPlot(
+            util.join(pos, earPos), middle, util.join(dirs, earDirs), baseAnlge, dims)
+        figs.extend([fig2])
+
+    return roomWav, json_data, figs
+
 
 
 if __name__ == '__main__':

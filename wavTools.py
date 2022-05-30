@@ -3,10 +3,10 @@ import numpy as np
 import pyroomacoustics as pra
 from pyroomacoustics.directivities \
     import (CardioidFamily, DirectionVector, DirectivityPattern)
-import environment as env
+import roomgen.environment as env
 import math
-from dereverb import deReverb
-import performance as perf
+from roomgen.dereverb import deReverb
+import roomgen.performance as perf
 
 
 def loadWavFile(path, offset=0, duration=None):

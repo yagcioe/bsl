@@ -1,8 +1,8 @@
 
 import matplotlib.pyplot as plt
-import environment as env
+import roomgen.environment as env
 
-import util
+import roomgen.util as util
 
 def scatterplot3d(points, dims):
     fig = plt.figure()

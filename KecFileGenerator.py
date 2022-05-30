@@ -2,10 +2,10 @@ import re
 import numpy as np
 import os
 import textgrid
-from timestamp import SentenceWithTimestamp
-import environment as env
-import performance as perf
-from wavTools import loadWavFile
+from roomgen.timestamp import SentenceWithTimestamp
+import roomgen.environment as env
+import roomgen.performance as perf
+from roomgen.wavTools import loadWavFile
 
 
 def rec_filter(x):
@@ -40,12 +40,10 @@ def matchingWavFile(txtName, allWavsNames):
     return None
 
 
-def FileGeneratorsKEC():
+def allWavGridTupels():
     perf.start()
     src = '/workspace/data/KEC'
     recFolders = list(filter(lambda f: rec_filter(f), os.listdir(src)))
-    allWavfiles = []
-    alltxtFiles = []
     allWavTxtTupels = []
     for rec in recFolders:
         currentDir = src+"/"+rec
@@ -66,10 +64,8 @@ def FileGeneratorsKEC():
         allWavTxtTupels.extend(wavTxtTupel)
         wavFilesOfFolder = list(
             map(lambda f: currentDir+"/"+f, wavFilesOfFolder))
-        allWavfiles.extend(wavFilesOfFolder)
         txtFilesOfFolder = list(
             map(lambda f: currentDir+"/"+f, txtFilesOfFolder))
-        alltxtFiles.extend(txtFilesOfFolder)
     perf.end()
     return allWavTxtTupels
 
@@ -101,47 +97,48 @@ def split_sentence(textGrid: textgrid.textgrid.TextGrid):
 
 
 def VoiceLineGeneratorKEC(count, voicesPerSample):
+    tupelList = allWavGridTupels()
+    for i in range(count):
+        w,t = _createVoiceLineKEC(voicesPerSample,tupelList)
+        yield w, t
+    return
 
+
+def _createVoiceLineKEC(voicesPerSample, tupelList):
     def getRec(path: str):
         split = path.split('/')
         return '/'.join(split[:-1])
 
-    tupelList = FileGeneratorsKEC()
-    for i in range(count):
-        perf.start('KecYield')
-        w = []
-        t = []
-        usedRec = []
-        j = 0
-        while j < voicesPerSample:
-            j += 1
-            ts, wav = (None, None)
-            randomText = ''
-            try:
+    w = []
+    t = []
+    usedRec = []
+    j = 0
+    while j < voicesPerSample:
+        j += 1
+        ts, wav = (None, None)
+        randomText = ''
+        try:
+            random_file = np.random.randint(0, len(tupelList))
+            randomText, randomWav = tupelList[random_file]
+
+            while env.prevent_SameRecordingInSampleTwice and getRec(randomText) in usedRec:
+                print(
+                    f'tried to use same recoring twice: {randomText}: {usedRec}')
                 random_file = np.random.randint(0, len(tupelList))
                 randomText, randomWav = tupelList[random_file]
+            sentences = split_sentence(
+                textgrid.TextGrid.fromFile(randomText))
 
-                while env.prevent_SameRecordingInSampleTwice and getRec(randomText) in usedRec:
-                    print(
-                        f'tried to use same recoring twice: {randomText}: {usedRec}')
-                    random_file = np.random.randint(0, len(tupelList))
-                    randomText, randomWav = tupelList[random_file]
-                sentences = split_sentence(
-                    textgrid.TextGrid.fromFile(randomText))
+            random_phrase = np.random.randint(0, len(sentences))
+            ts = sentences[random_phrase]
+            wav = loadWavFile(
+                randomWav, ts.startTime, ts.duration)
+            usedRec.append(getRec(randomText))
+        except Exception as e:
+            print('could not load Data' + str(e))
+            j -= 1
+            continue
 
-                random_phrase = np.random.randint(0, len(sentences))
-                ts = sentences[random_phrase]
-                wav = loadWavFile(
-                    randomWav, ts.startTime, ts.duration)
-                usedRec.append(getRec(randomText))
-            except Exception as e:
-                print('could not load Data' + str(e))
-                j -= 1
-                continue
-
-            t.append(ts)
-            w.append(wav)
-        perf.end('KecYield')
-
-        yield w, t
-    return
+        t.append(ts)
+        w.append(wav)
+    return w,t
