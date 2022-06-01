@@ -1,5 +1,5 @@
 from pedalboard import Pedalboard, Compressor, Mix, Gain, Invert
-import roomgen.environment as env
+from . import environment as env
 
 
 def buildPedalBoard(stacks) -> Pedalboard:

@@ -2,10 +2,10 @@ import re
 import numpy as np
 import os
 import textgrid
-from roomgen.timestamp import SentenceWithTimestamp
-import roomgen.environment as env
-import roomgen.performance as perf
-from roomgen.wavTools import loadWavFile
+from .timestamp import SentenceWithTimestamp
+from . import environment as env
+from . import performance as perf
+from .wavTools import loadWavFile
 
 
 def rec_filter(x):

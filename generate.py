@@ -8,12 +8,12 @@ import math
 import soundfile
 import json
 
-import roomgen.environment as env
-from roomgen.KecFileGenerator import VoiceLineGeneratorKEC
-import roomgen.wavTools as wavTools
-import roomgen.util as util
-import roomgen.visualization as visual
-import roomgen.performance as perf
+from . import environment as env
+from .KecFileGenerator import VoiceLineGeneratorKEC
+from . import wavTools
+from . import util
+from . import visualization as visual
+from . import performance as perf
 
 env.overrideParams()
 
