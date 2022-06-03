@@ -1,3 +1,4 @@
+import random
 import librosa
 import numpy as np
 import pyroomacoustics as pra
@@ -103,12 +104,14 @@ def mixRoom(room: pra.ShoeBox, listenerEarPositions, listenerEarDirs, speakerPos
     mic_array = pra.MicrophoneArray(
         np.c_[listenerEarPositions[0], listenerEarPositions[1]], directivity=listenerEarDirs, fs=env.sampleRate)
 
+    randStartTime = random.random*env.max_rand_start_time 
+
     for i in range(len(speakerPositions)):
         room.add_source(
             position=speakerPositions[i],
             directivity=speakerDirs[i],
             signal=wavs[i],
-            delay=timeStamp[i].startTime)
+            delay=timeStamp[i].startTime+randStartTime)
     room.add_microphone_array(mic_array)
 
     return room
