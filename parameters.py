@@ -50,6 +50,7 @@ rt60_range = [0.25, 0.6]
 sampleRate = 16000
 min_words_per_sentence = 6
 padding = 1  # sec
+max_rand_start_time = 1 # prevent first speaker to always start at 0s
 
 # 'nice to have' for data generation
 source_dataset = 'KEC - https://clarin.phonetik.uni-muenchen.de/BASRepository/index.php?target=Public/Corpora/KEC/KEC.1.php'

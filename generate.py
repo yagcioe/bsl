@@ -47,8 +47,8 @@ def random_position_in_room(roomDims):
 
 
 def positions_too_close(positions):
-    for a in positions[1:]:
-        for b in positions[1:]:
+    for a in positions:
+        for b in positions:
             if a == b:
                 continue
             if util.distance(a, b) < 1:
