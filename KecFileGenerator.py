@@ -41,7 +41,7 @@ def matchingWavFile(txtName, allWavsNames):
 
 
 def allWavGridTupels():
-    perf.start()
+    # perf.start()
     src = '/workspace/data/KEC'
     recFolders = list(filter(lambda f: rec_filter(f), os.listdir(src)))
     allWavTxtTupels = []
@@ -66,7 +66,7 @@ def allWavGridTupels():
             map(lambda f: currentDir+"/"+f, wavFilesOfFolder))
         txtFilesOfFolder = list(
             map(lambda f: currentDir+"/"+f, txtFilesOfFolder))
-    perf.end()
+    # perf.end()
     return allWavTxtTupels
 
 

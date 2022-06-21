@@ -22,7 +22,7 @@ env.overrideParams()
 
 
 def generate_room_characteristics():
-    perf.start()
+    # perf.start()
     dims = rt60 = 0
     if env.randomize_room:
         dims = [np.random.randint(env.room_dim_ranges[i][0], env.room_dim_ranges[i][1])
@@ -35,7 +35,7 @@ def generate_room_characteristics():
         dims = env.normal_room_dim
         rt60 = env.normal_rt60
 
-    perf.end()
+    # perf.end()
     return dims, rt60
 
 
@@ -121,7 +121,7 @@ def random_persons_in_room(roomDims, count):
         return pos
 
     # do while: erzeuge solange bis gültiges ergebnis
-    perf.start()
+    # perf.start()
     positions = pos_in_room(count)
     listenerDir, speakerDirs, baseAngle, middle = transform_to_directivities(
         positions)
@@ -130,7 +130,7 @@ def random_persons_in_room(roomDims, count):
         listenerDir, speakerDirs, baseAngle, middle = transform_to_directivities(
             positions)
 
-    perf.end()
+    # perf.end()
     return positions, util.join([listenerDir], speakerDirs), middle, baseAngle
 
 # calculates mic positions depentend of middle point
@@ -194,17 +194,17 @@ def createJsonData(sampleNr: int, duration, speakerIdsList, listenerPos, listene
 
 
 def createFolder(targetFolder):
-    perf.start()
+    # perf.start()
     try:
         os.mkdir(targetFolder)
     except Exception as e:
         shutil.rmtree(targetFolder)
         os.mkdir(targetFolder)
-    perf.end()
+    # perf.end()
 
 
 def exportSample(sampleNr: int, roomWav, wavs, json_data: any, figs):
-    perf.start()
+    # perf.start()
     folder = env.target_dir+'/'+str(sampleNr)
     createFolder(folder)
     soundfile.write(folder+'/room.wav', np.swapaxes(roomWav,0,1), env.sampleRate)
@@ -229,7 +229,7 @@ def generate(amount=env.target_amount_samples, sampleNr= env.skipSamples):
         sampleNr += 1
         try:
             # creating parameters
-            perf.start('generate')
+            # perf.start('generate')
             roomWav, json_data, figs = _calculateSample(
                 wavs, timestamps, sampleNr)
             if(env.visualize):
@@ -242,7 +242,7 @@ def generate(amount=env.target_amount_samples, sampleNr= env.skipSamples):
                 print(msg, end="\r", flush=True)
                 if sampleNr == amount:
                     print(msg)
-            perf.end('generate')
+            # perf.end('generate')
 
             yield sampleNr, roomWav, wavs, json_data, figs
         except Exception as e:

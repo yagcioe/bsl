@@ -117,9 +117,9 @@ def mixRoom(room: pra.ShoeBox, listenerEarPositions, listenerEarDirs, speakerPos
     return room
 
 def simulate(room:pra.ShoeBox):
-    perf.start()
+    # perf.start()
     room.simulate()
-    perf.end()
+    # perf.end()
 
 
 def exportRoom(room: pra.ShoeBox, filepath):
