@@ -237,7 +237,7 @@ def generate(amount=env.target_amount_samples, sampleNr= env.skipSamples):
                     plt.figure(fig)
                     plt.show()
 
-            if env.verbose > 0:
+            if env.verbose > 1:
                 msg = f'Generated Room {sampleNr} / {amount}.'
                 print(msg, end="\r", flush=True)
                 if sampleNr == amount:
