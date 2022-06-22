@@ -122,8 +122,9 @@ def _createVoiceLineKEC(voicesPerSample, tupelList):
             randomText, randomWav = tupelList[random_file]
 
             while env.prevent_SameRecordingInSampleTwice and getRec(randomText) in usedRec:
-                print(
-                    f'tried to use same recoring twice: {randomText}: {usedRec}')
+                if(env.verbose>1):
+                    print(
+                        f'tried to use same recoring twice: {randomText}: {usedRec}')
                 random_file = np.random.randint(0, len(tupelList))
                 randomText, randomWav = tupelList[random_file]
             sentences = split_sentence(
@@ -135,7 +136,8 @@ def _createVoiceLineKEC(voicesPerSample, tupelList):
                 randomWav, ts.startTime, ts.duration)
             usedRec.append(getRec(randomText))
         except Exception as e:
-            print('could not load Data' + str(e))
+            if(env.verbose>0):
+                print('could not load Data' + str(e))
             j -= 1
             continue
 
