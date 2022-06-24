@@ -15,7 +15,7 @@ def loadWavFile(path, offset=0, duration=None):
                            duration=duration, mono=True)
     wav = librosa.util.normalize(wav)
     wav = deReverb(wav)
-    
+
     return wav
 
 
@@ -93,6 +93,11 @@ def makeTimeOffsets(timeStamps):
         s.setOffset(offset)
         tracks[posToFill].append(s)
 
+    #random start time offset for all ts
+    randStartTime = random.random()*env.max_rand_start_time
+    for ts in timeStamps:
+        ts.setOffset(ts.startTime + randStartTime)
+        
     return tracks
 
 
@@ -104,19 +109,18 @@ def mixRoom(room: pra.ShoeBox, listenerEarPositions, listenerEarDirs, speakerPos
     mic_array = pra.MicrophoneArray(
         np.c_[listenerEarPositions[0], listenerEarPositions[1]], directivity=listenerEarDirs, fs=env.sampleRate)
 
-    randStartTime = random.random()*env.max_rand_start_time 
-
     for i in range(len(speakerPositions)):
         room.add_source(
             position=speakerPositions[i],
             directivity=speakerDirs[i],
             signal=wavs[i],
-            delay=timeStamp[i].startTime+randStartTime)
+            delay=timeStamp[i].startTime)
     room.add_microphone_array(mic_array)
 
     return room
 
-def simulate(room:pra.ShoeBox):
+
+def simulate(room: pra.ShoeBox):
     # perf.start()
     room.simulate()
     # perf.end()
@@ -125,5 +129,6 @@ def simulate(room:pra.ShoeBox):
 def exportRoom(room: pra.ShoeBox, filepath):
     room.mic_array.to_wav(filepath, norm=True, bitdepth=np.float32)
 
+
 def duration(wav):
-    return librosa.samples_to_time(len(wav)-1,sr=env.sampleRate)
+    return librosa.samples_to_time(len(wav)-1, sr=env.sampleRate)
