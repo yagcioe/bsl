@@ -207,7 +207,8 @@ def exportSample(sampleNr: int, roomWav, wavs, json_data: any, figs):
     # perf.start()
     folder = env.target_dir+'/'+str(sampleNr)
     createFolder(folder)
-    soundfile.write(folder+'/room.wav', np.swapaxes(roomWav,0,1), env.sampleRate)
+    soundfile.write(folder+'/room.wav',
+                    np.swapaxes(roomWav, 0, 1), env.sampleRate)
     for i in range(len(wavs)):
         soundfile.write(folder+f'/speaker{i}.wav', wavs[i], env.sampleRate)
     with open(folder+'/description.json', 'w', encoding='utf8') as file:
@@ -222,7 +223,7 @@ def exportSample(sampleNr: int, roomWav, wavs, json_data: any, figs):
 """MAIN"""
 
 
-def generate(amount=env.target_amount_samples, sampleNr= env.skipSamples):
+def generate(amount=env.target_amount_samples, sampleNr=env.skipSamples):
     gen = VoiceLineGeneratorKEC(amount, env.speakers_in_room)
 
     for (wavs, timestamps) in gen:
@@ -256,12 +257,36 @@ def generate(amount=env.target_amount_samples, sampleNr= env.skipSamples):
 
 
 def _calculateSample(wavs, timestamps, sampleNr):
+
+    tracks = wavTools.makeTimeOffsets(timestamps)
+
+    # remove hopeless wavs
+    for i, (w, t) in enumerate(zip(wavs, timestamps)):
+        if t.startTime > wavTools.maxDuration():
+            del wavs[i]
+            del timestamps[i]
+
+    # shorten tracks
+    for i, (w, t) in enumerate(zip(wavs, timestamps)):
+        paddingR = 3.5  # sec
+        maxEnd = wavTools.maxDuration()-paddingR
+        maxSample = wavTools.timeToSample(maxEnd)-1
+        t.endTime = min(t.endTime, maxEnd)
+        t.duration = t.endTime-t.startTime
+        wavs[i] = w[:maxSample]  # shorten if nessesary
+
+    # remove tracks that are too short
+    for i, (w, t) in enumerate(zip(wavs, timestamps)):
+        if t.duration < 1:
+            del wavs[i]
+            del timestamps[i]
+
     # creating parameters
     dims, rt60 = generate_room_characteristics()
     room = wavTools.createRoom(dims, rt60)
 
     pos, dirs, middle, baseAnlge = random_persons_in_room(
-        dims, env.speakers_in_room+1)
+        dims, len(wavs)+1)
     listener_pos = pos[0]
     listener_dir = dirs[0]
     speakerPos = pos[1:]
@@ -269,7 +294,6 @@ def _calculateSample(wavs, timestamps, sampleNr):
 
     earPos, earDirs = get_pos_mics(listener_pos, listener_dir)
 
-    tracks = wavTools.makeTimeOffsets(timestamps)
     room = wavTools.mixRoom(room, earPos, earDirs, speakerPos,
                             speakerDir, wavs, timestamps)
     wavTools.simulate(room)
@@ -294,6 +318,16 @@ def _calculateSample(wavs, timestamps, sampleNr):
     allListenerDirs.extend(normedEarDirs)
 
     roomWav = room.mic_array.signals
+
+    l = len(roomWav[0])
+    if l >= wavTools.maxSample():
+        # shorten, if too long
+        roomWav = roomWav[:, :wavTools.maxSample()]
+    if(l < wavTools.maxSample()):
+        # lengthen if too short
+        diff = wavTools.maxSample()-l
+        roomWav = np.append(roomWav, np.zeros((len(roomWav), diff)), axis=1)
+
     duration = wavTools.duration(roomWav[0])
 
     # creating data
@@ -309,7 +343,6 @@ def _calculateSample(wavs, timestamps, sampleNr):
         figs.extend([fig2])
 
     return roomWav, json_data, figs
-
 
 
 if __name__ == '__main__':

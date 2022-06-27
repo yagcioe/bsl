@@ -51,6 +51,9 @@ sampleRate = 16000
 min_words_per_sentence = 6
 padding = 1  # sec
 max_rand_start_time = 1 # prevent first speaker to always start at 0s
+n_fft = 1024
+hop_len= n_fft//4
+maxWidthOfImage=640 # width after stft in px
 
 # 'nice to have' for data generation
 source_dataset = 'KEC - https://clarin.phonetik.uni-muenchen.de/BASRepository/index.php?target=Public/Corpora/KEC/KEC.1.php'

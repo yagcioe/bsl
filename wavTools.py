@@ -132,3 +132,12 @@ def exportRoom(room: pra.ShoeBox, filepath):
 
 def duration(wav):
     return librosa.samples_to_time(len(wav)-1, sr=env.sampleRate)
+
+def maxDuration():
+    return librosa.frames_to_time(frames=env.maxWidthOfImage-1,sr=env.sampleRate,hop_length=env.hop_len,n_fft=env.n_fft)
+
+def maxSample():
+    return librosa.frames_to_samples(frames=env.maxWidthOfImage-1,hop_length=env.hop_len,n_fft=env.n_fft)
+
+def timeToSample(time):
+    return librosa.time_to_samples(times=time,sr=env.sampleRate)
