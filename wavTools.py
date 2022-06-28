@@ -93,11 +93,11 @@ def makeTimeOffsets(timeStamps):
         s.setOffset(offset)
         tracks[posToFill].append(s)
 
-    #random start time offset for all ts
+    # random start time offset for all ts
     randStartTime = random.random()*env.max_rand_start_time
     for ts in timeStamps:
         ts.setOffset(ts.startTime + randStartTime)
-        
+
     return tracks
 
 
@@ -131,13 +131,16 @@ def exportRoom(room: pra.ShoeBox, filepath):
 
 
 def duration(wav):
-    return librosa.samples_to_time(len(wav)-1, sr=env.sampleRate)
+    return librosa.samples_to_time(len(wav), sr=env.sampleRate)
+
 
 def maxDuration():
-    return librosa.frames_to_time(frames=env.maxWidthOfImage-1,sr=env.sampleRate,hop_length=env.hop_len,n_fft=env.n_fft)
+    return librosa.frames_to_time(frames=env.maxWidthOfImage-1, sr=env.sampleRate, hop_length=env.hop_len, n_fft=env.n_fft)
+
 
 def maxSample():
-    return librosa.frames_to_samples(frames=env.maxWidthOfImage-1,hop_length=env.hop_len,n_fft=env.n_fft)
+    return librosa.frames_to_samples(frames=env.maxWidthOfImage-1, hop_length=env.hop_len, n_fft=env.n_fft)
+
 
 def timeToSample(time):
-    return librosa.time_to_samples(times=time,sr=env.sampleRate)
+    return librosa.time_to_samples(times=time, sr=env.sampleRate)

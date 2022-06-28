@@ -268,12 +268,11 @@ def _calculateSample(wavs, timestamps, sampleNr):
 
     # shorten tracks
     for i, (w, t) in enumerate(zip(wavs, timestamps)):
-        paddingR = 3.5  # sec
+        paddingR = 2  # sec
         maxEnd = wavTools.maxDuration()-paddingR
-        maxSample = wavTools.timeToSample(maxEnd)-1
         t.endTime = min(t.endTime, maxEnd)
         t.duration = t.endTime-t.startTime
-        wavs[i] = w[:maxSample]  # shorten if nessesary
+        wavs[i] = w[:wavTools.timeToSample(t.duration)]  # shorten if nessesary
 
     # remove tracks that are too short
     for i, (w, t) in enumerate(zip(wavs, timestamps)):
